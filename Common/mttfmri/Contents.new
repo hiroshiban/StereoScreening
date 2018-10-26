@@ -1,0 +1,25 @@
+% 
+% MATLAB Toolbox for Multiple Trial Type Event-Related fMRI 
+%
+% Version 1.0
+% Release Date: March 24, 2004
+%
+%
+%
+%
+%  Example 
+%
+%  multsim3.m 
+%
+%
+%  Design Programs
+%  ---------------
+%
+%   clumpvec - algorithm for clumping a random sequence
+%
+%  Utility programs
+%  -----------------
+%   
+%   voltbasis -- generate gamma density basis functions
+%   laguerre  -- generate Laguerre basis functions
+%   hemoresp -- 

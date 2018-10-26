@@ -1,0 +1,11 @@
+
+plot_blockpermute: OK
+show_mlimit_ent:   OK
+plot_clusterexamp: OK
+
+
+checking out simulation files for run-a-bility
+
+1. make_mixed [OK]
+2. batch_basis [OK]
+3. batch_color [OK]
