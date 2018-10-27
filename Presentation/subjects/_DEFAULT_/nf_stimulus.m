@@ -17,7 +17,7 @@ sparam.disparity=[-8, -4,  -2,  -1, -0.5, 0.5, 1, 2, 4, 8]; % target disparities
 sparam.numTrials=20;
 
 %%% RDS parameters
-sparam.dotRadius=[0.08,0.08]; % radius of RDS's white/black ovals
+sparam.dotRadius=[0.05,0.05]; % radius of RDS's white/black ovals
 sparam.dotDens=2; % deinsity of dot in RDS image (1-100)
 sparam.colors=[255,0,128]; % RDS colors [dot1,dot2,background](0-255)
 sparam.oversampling_ratio=4; % oversampling_ratio for fine scale RDS images, [val]
@@ -38,7 +38,7 @@ sparam.noise_method='add'; % one of 'add' and 'replace', used only when sparam.n
 sparam.initial_fixation_time=1000;
 
 %%% duration in msec for each condition
-sparam.condition_duration=800;
+sparam.condition_duration=600;
 
 %%% duration in msec for simulus ON period for each trial, integer (1)
 sparam.stim_on_duration=300;

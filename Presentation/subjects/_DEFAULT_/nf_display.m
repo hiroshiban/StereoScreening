@@ -13,7 +13,7 @@ dparam.ExpMode='shutter';%'cross';
 % 0:ENTER/SPACE, 1:Left-mouse button, 2:the first MR trigger pulse (CiNet),
 % 3:waiting for a MR trigger pulse (BUIC) -- checking onset of pin #11 of the parallel port,
 % or 4:custom key trigger (wait for a key input that you specify as tgt_key).
-dparam.start_method=0;
+dparam.start_method=1;
 
 % a pseudo trigger key from the MR scanner when it starts, only valid when dparam.start_method=4;
 dparam.custom_trigger=KbName(32);
@@ -32,7 +32,7 @@ dparam.givefeedback=1;
 dparam.fullscr=false;
 
 %%% the resolution of the screen height
-dparam.ScrHeight=1080;
+dparam.ScrHeight=1440;
 
 %% the resolution of the screen width
-dparam.ScrWidth=1920;
+dparam.ScrWidth=2560;

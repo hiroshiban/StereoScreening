@@ -20,7 +20,7 @@ function OK=run_exp(subj,acq_ids)
 %           without any error [true/false]
 %
 % Created    : "2010-06-25 08:37:58 ban"
-% Last Update: "2018-10-26 10:48:24 ban"
+% Last Update: "2018-10-26 12:49:03 ban"
 
 % constants, you can change these for your own purpose.
 stim_fname='nf_stimulus';
@@ -79,7 +79,7 @@ load(fullfile('..','gamma_table','ASUS_ROG_Swift_PG278Q','181003','cbs','gammata
 %% run stimulus presentations
 % run Experiment
 for ii=acq_ids
-  main_exp_name=sprintf('%s(''%s'',%d,''%s'',''%s'',''%s'');',run_script,subj,ii,disp_fname,stim_fname,gammatable);
+  main_exp_name=sprintf('%s(''%s'',%d,''%s'',''%s'',gammatable);',run_script,subj,ii,disp_fname,stim_fname);
   eval(main_exp_name);
 end
 OK=true;
