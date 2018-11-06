@@ -120,6 +120,7 @@ function StereoScreening(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 % %%% image size
 % sparam.outerRectFieldSize=[8,8]; % target stimulus size in deg
 % sparam.innerRectFieldSize=[4,4]; % target stimulus size in deg
+% sparam.base_disparity=0;         % target base disparity in deg (if non-zero, the target plane is located to near/far side compared to the fixation plane)
 % sparam.disparity=[8,  4,  2,  1, 0.5, -0.5, -1, -2, -4, -8]; % target disparities in arcmin
 %
 % %%% the number of trials for each stimulus condition
@@ -391,6 +392,7 @@ else  % if useStimulusFile
   %%% image size
   sparam.outerRectFieldSize=[8,8]; % target stimulus size in deg
   sparam.innerRectFieldSize=[4,4]; % target stimulus size in deg
+  sparam.base_disparity=0;         % target base disparity in deg (if non-zero, the target plane is located to near/far side compared to the fixation plane)
   sparam.disparity=[8,  4,  2,  1, 0.5, -0.5, -1, -2, -4, -8]; % target disparities in arcmin
 
   %%% the number of trials for each stimulus condition (see stimulusfile, sparam.disparity)
@@ -475,11 +477,11 @@ disp('*************** Screen Settings ****************');
 eval(sprintf('disp(''Screen Height          : %d'');',dparam.ScrHeight));
 eval(sprintf('disp(''Screen Width           : %d'');',dparam.ScrWidth));
 disp('*********** Stimulation Periods etc. ***********');
-eval(sprintf('disp(''Fixation Time(sec)     : %d'');',sparam.initial_fixation_time));
-eval(sprintf('disp(''Cond Duration(sec)     : %d'');',sparam.condition_duration));
-eval(sprintf('disp(''Between Trial Dur(sec) : %d'');',sparam.BetweenDuration));
-eval(sprintf('disp(''Stim ON Duration(sec)  : %d'');',sparam.stim_on_duration));
-eval(sprintf('disp(''Stim OFF Duration(sec) : %d'');',sparam.stim_off_duration));
+eval(sprintf('disp(''Fixation Time(sec)     : %.2f'');',sparam.initial_fixation_time));
+eval(sprintf('disp(''Cond Duration(sec)     : %.2f'');',sparam.condition_duration));
+eval(sprintf('disp(''Between Trial Dur(sec) : %.2f'');',sparam.BetweenDuration));
+eval(sprintf('disp(''Stim ON Duration(sec)  : %.2f'');',sparam.stim_on_duration));
+eval(sprintf('disp(''Stim OFF Duration(sec) : %.2f'');',sparam.stim_off_duration));
 disp('*** The number of cond, block, trials, imgs ****');
 eval(sprintf('disp(''#trials in each cond   : %d'');',sparam.numTrials));
 eval(sprintf('disp(''#conditions            : %d'');',sparam.numConds));
@@ -587,7 +589,8 @@ sparam.pix_per_deg=round( 1/( 180*atan(sparam.cm_per_pix/sparam.vdist)/pi ) );
 % generate the rectangular field
 rect_field=cell(numel(sparam.disparity),1);
 for ii=1:1:numel(sparam.disparity)
-  rect_height=CalcDistFromDisparity(sparam.ipd,sparam.disparity(ii),sparam.vdist); % unit: cm
+  rect_height=[CalcDistFromDisparity(sparam.ipd,sparam.disparity(ii)+sparam.base_disparity,sparam.vdist),...
+               CalcDistFromDisparity(sparam.ipd,sparam.base_disparity,sparam.vdist)]; % unit: cm
   rect_field{ii}=nf_CreateRectField(sparam.outerRectFieldSize,sparam.innerRectFieldSize,rect_height,sparam.pix_per_deg,sparam.oversampling_ratio); % unit: cm
 end
 

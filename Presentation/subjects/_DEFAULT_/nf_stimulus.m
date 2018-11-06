@@ -9,9 +9,9 @@
 
 %%% image size
 sparam.outerRectFieldSize=[12,12]; % target stimulus size in deg
-sparam.innerRectFieldSize=[8,8]; % target stimulus size in deg
-%sparam.disparity=[8,  4,  2,  1, 0.5, -0.5, -1, -2, -4, -8]; % target disparities in arcmin
-sparam.disparity=[-8, -4,  -2,  -1, -0.5, 0.5, 1, 2, 4, 8]; % target disparities in arcmin
+sparam.innerRectFieldSize=[8,8];   % target stimulus size in deg
+sparam.base_disparity=0;           % target base disparity in deg (if non-zero, the target plane is located to near/far side compared to the fixation plane)
+sparam.disparity=[-8, -4, -2, -1, -0.5, 0.5, 1, 2, 4, 8]; % target disparities in arcmin
 
 %%% the number of trials for each stimulus condition
 sparam.numTrials=20;
@@ -56,7 +56,7 @@ sparam.bgcolor=[128,128,128];
 
 %%% RGB for background patches
 sparam.patch_size=[30,30];   % background patch size, [height,width] in pixels
-sparam.patch_num=[20,20];    % the number of background patches along vertical and horizontal axis
+sparam.patch_num=[20,40];    % the number of background patches along vertical and horizontal axis
 sparam.color1=[255,255,255]; % 1x3 matrices
 sparam.color2=[0,0,0];       % 1x3 matrices
 
