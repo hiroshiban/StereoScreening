@@ -770,7 +770,7 @@ while (GetSecs() < targetTime), [resps,event]=resps.check_responses(event); end
 %%%% The Trial Loop
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-for currenttrial = 1:1:numel(design)
+for currenttrial=1:1:numel(design)
 
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % Stimulus generation
@@ -867,69 +867,46 @@ for currenttrial = 1:1:numel(design)
   Screen('DrawingFinished',winPtr);
   Screen('Flip',winPtr,[],[],[]);
 
+  % get a response
   respFlag=0;
-  while respFlag==0
+  while ~respFlag
     [x,y,button]=GetMouse(); %#ok
     [dummy1,dummy2,keyCode]=resps.check_responses(event); %#ok
     if button(1) || keyCode(dparam.Key1)==1
       event=event.add_event('Response','Near');
-      respFlag=1;
-      % giving a correct/incorrect feedback
-      if dparam.givefeedback
-        if disparity<0 % near, correct
-          for nn=1:1:nScr
-            Screen('SelectStereoDrawBuffer',winPtr,nn-1);
-            Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
-            Screen('DrawTexture',winPtr,fcross{3,nn},[],CenterRect(fixRect,winRect));
-          end
-          Screen('DrawingFinished',winPtr);
-          Screen('Flip',winPtr,[],[],[]);
-          PlaySound(1); % high tone sound
-        else % far, incorrect
-          for nn=1:1:nScr
-            Screen('SelectStereoDrawBuffer',winPtr,nn-1);
-            Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
-            Screen('DrawTexture',winPtr,fcross{4,nn},[],CenterRect(fixRect,winRect));
-          end
-          Screen('DrawingFinished',winPtr);
-          Screen('Flip',winPtr,[],[],[]);
-          PlaySound(0); % low tone sound
-        end
-        ctime=GetSecs();
-        while GetSecs()<ctime+0.5, resps.check_responses(event); end
-      end
+      respFlag=-1*sign(disparity); % if disparity<0 (near): respFlag=1 (correct), while if disparity>0 (far): respFlag=-1 (incorrect)
     elseif button(3) || keyCode(dparam.Key2)==1
       respmatrix(stimID)=respmatrix(stimID)+1;
       event=event.add_event('Response','Far');
-      respFlag=1;
-      % giving a correct/incorrect feedback
-      if dparam.givefeedback
-        if disparity>0 % far, correct
-          for nn=1:1:nScr
-            Screen('SelectStereoDrawBuffer',winPtr,nn-1);
-            Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
-            Screen('DrawTexture',winPtr,fcross{3,nn},[],CenterRect(fixRect,winRect));
-          end
-          Screen('DrawingFinished',winPtr);
-          Screen('Flip',winPtr,[],[],[]);
-          PlaySound(1);
-        else % near, incorrect
-          for nn=1:1:nScr
-            Screen('SelectStereoDrawBuffer',winPtr,nn-1);
-            Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
-            Screen('DrawTexture',winPtr,fcross{4,nn},[],CenterRect(fixRect,winRect));
-          end
-          Screen('DrawingFinished',winPtr);
-          Screen('Flip',winPtr,[],[],[]);
-          PlaySound(0);
-        end
-        ctime=GetSecs();
-        while GetSecs()<ctime+0.5, resps.check_responses(event); end
-      end
+      respFlag=sign(disparity); % if disparity>0 (far): respFlag=1 (correct), while if disparity<0 (near): respFlag=-1 (incorrect)
     else
       respFlag=0;
     end
     resps.check_responses(event);
+  end
+
+  % giving a correct/incorrect feedback
+  if dparam.givefeedback
+    if respFlag==1 % correct response
+      event=event.add_event('Feedback','Correct');
+    else % if respFlag==-1 or 0 % incorrect response
+      event=event.add_event('Feedback','Incorrect');
+    end
+    for nn=1:1:nScr
+      Screen('SelectStereoDrawBuffer',winPtr,nn-1);
+      Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
+      if respFlag==1 % correct response
+        Screen('DrawTexture',winPtr,fcross{3,nn},[],CenterRect(fixRect,winRect));
+      else % if respFlag==-1 or 0 % incorrect response
+        Screen('DrawTexture',winPtr,fcross{4,nn},[],CenterRect(fixRect,winRect));
+      end
+    end
+    Screen('DrawingFinished',winPtr);
+    Screen('Flip',winPtr,[],[],[]);
+    PlaySound(respFlag>0);
+
+    ctime=GetSecs();
+    while GetSecs()<ctime+0.5, resps.check_responses(event); end
   end
 
   %% back to the default view and wait for sparam.BetweenDuration (duration between trials)
@@ -946,7 +923,7 @@ for currenttrial = 1:1:numel(design)
   for ii=1:1:2, Screen('Close',stim{ii}); end
   event=event.add_event('End Trial',disparity);
 
-end % for currenttrial = 1:1:size(design,2)
+end % for currenttrial=1:1:numel(design)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -971,6 +948,13 @@ fprintf('saving data...');
 savefname=fullfile(resultDir,[num2str(subjID),'_near_far_rectangle_results_run_',num2str(acq,'%02d'),'.mat']);
 eval(sprintf('save -append %s subjID acq sparam dparam design event gamma_table respmatrix;',savefname));
 disp('done.');
+
+% tell the experimenter that the measurements are completed
+try
+  for ii=1:1:3, Snd('Play',sin(2*pi*0.2*(0:900)),8000); end
+catch
+  % do nothing
+end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
