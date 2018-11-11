@@ -8,8 +8,9 @@
 % "sparam" means "stimulus generation parameters"
 
 %%% image size
-sparam.outerRectFieldSize=[12,12]; % target stimulus size in deg
-sparam.innerRectFieldSize=[8,8];   % target stimulus size in deg
+sparam.outerRectFieldSize=[12,12]; % target stimulus size in deg, [row,col]
+sparam.innerRectFieldSize=[8,8];   % target stimulus size in deg, [row,col]
+sparam.gapRectFieldSize=[0,0];     % widths [row(top and bottom),col(right and left)] of the gap between inner and outer rectangles in deg (if 0, no gap). gapRectFieldSize + innerRectFieldSize < outerRectFieldSize
 sparam.base_disparity=0;           % target base disparity in deg (if non-zero, the target plane is located to near/far side compared to the fixation plane)
 sparam.disparity=[-8, -4, -2, -1, -0.5, 0.5, 1, 2, 4, 8]; % target disparities in arcmin
 
@@ -62,3 +63,6 @@ sparam.color2=[0,0,0];       % 1x3 matrices
 
 %%% for creating disparity & shadow
 run(fullfile(fileparts(mfilename('fullpath')),'sizeparams'));
+%sparam.ipd=6.4;
+%sparam.pix_per_cm=57.1429;
+%sparam.vdist=65;

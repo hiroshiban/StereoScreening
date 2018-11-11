@@ -118,8 +118,9 @@ function StereoScreening(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 % % "sparam" means "stimulus generation parameters"
 %
 % %%% image size
-% sparam.outerRectFieldSize=[8,8]; % target stimulus size in deg
-% sparam.innerRectFieldSize=[4,4]; % target stimulus size in deg
+% sparam.outerRectFieldSize=[8,8]; % target stimulus size in deg, [row,col]
+% sparam.innerRectFieldSize=[4,4]; % target stimulus size in deg, [row,col]
+% sparam.gapRectFieldSize=[0,0];   % widths [row(top and bottom),col(right and left)] of the gap between inner and outer rectangles in deg (if 0, no gap). gapRectFieldSize + innerRectFieldSize < outerRectFieldSize
 % sparam.base_disparity=0;         % target base disparity in deg (if non-zero, the target plane is located to near/far side compared to the fixation plane)
 % sparam.disparity=[8,  4,  2,  1, 0.5, -0.5, -1, -2, -4, -8]; % target disparities in arcmin
 %
@@ -390,8 +391,9 @@ else  % if useStimulusFile
   % otherwise, set default variables
 
   %%% image size
-  sparam.outerRectFieldSize=[8,8]; % target stimulus size in deg
-  sparam.innerRectFieldSize=[4,4]; % target stimulus size in deg
+  sparam.outerRectFieldSize=[8,8]; % target stimulus size in deg, [row,col]
+  sparam.innerRectFieldSize=[4,4]; % target stimulus size in deg, [row,col]
+  sparam.gapRectFieldSize=[0,0];   % widths [row(top and bottom),col(right and left)] of the gap between inner and outer rectangles in deg (if 0, no gap). gapRectFieldSize + innerRectFieldSize < outerRectFieldSize
   sparam.base_disparity=0;         % target base disparity in deg (if non-zero, the target plane is located to near/far side compared to the fixation plane)
   sparam.disparity=[8,  4,  2,  1, 0.5, -0.5, -1, -2, -4, -8]; % target disparities in arcmin
 
@@ -456,6 +458,12 @@ sparam.numConds=numel(sparam.disparity);
 
 % set the other parameters
 dparam.RunScript = mfilename();
+sparam.RunScript = mfilename();
+
+% validating the input variables
+if sparam.gapRectFieldSize+sparam.innerRectFieldSize >= sparam.outerRectFieldSize
+  error('sparam.gapRectFieldSize + sparam.innerRectFieldSize should be smaller than sparam.outerRectFieldSize. check the contents of sparam.');
+end
 
 % displaying the Presentation Parameters
 disp('The Presentation Parameters are as below.');
@@ -591,7 +599,7 @@ rect_field=cell(numel(sparam.disparity),1);
 for ii=1:1:numel(sparam.disparity)
   rect_height=[CalcDistFromDisparity(sparam.ipd,sparam.disparity(ii)+sparam.base_disparity,sparam.vdist),...
                CalcDistFromDisparity(sparam.ipd,sparam.base_disparity,sparam.vdist)]; % unit: cm
-  rect_field{ii}=nf_CreateRectField(sparam.outerRectFieldSize,sparam.innerRectFieldSize,rect_height,sparam.pix_per_deg,sparam.oversampling_ratio); % unit: cm
+  rect_field{ii}=nf_CreateRectField(sparam.outerRectFieldSize,sparam.innerRectFieldSize,sparam.gapRectFieldSize,rect_height,sparam.pix_per_deg,sparam.oversampling_ratio); % unit: cm
 end
 
 % adjust parameters for oversampling (this adjustment shoud be done after creating heightfields)
