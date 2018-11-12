@@ -58,10 +58,10 @@ sparam.bgcolor=[128,128,128];
 %%% RGB for background patches
 sparam.patch_size=[30,30];   % background patch size, [height,width] in pixels
 sparam.patch_num=[20,40];    % the number of background patches along vertical and horizontal axis
-sparam.color1=[255,255,255]; % 1x3 matrices
-sparam.color2=[0,0,0];       % 1x3 matrices
+sparam.patch_color1=[255,255,255]; % 1x3 matrices
+sparam.patch_color2=[0,0,0];       % 1x3 matrices
 
-%%% for creating disparity & shadow
+%%% size parameters
 run(fullfile(fileparts(mfilename('fullpath')),'sizeparams'));
 %sparam.ipd=6.4;
 %sparam.pix_per_cm=57.1429;

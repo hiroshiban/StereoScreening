@@ -1,6 +1,6 @@
-function StereoScreening(subjID, acq, displayfile, stimulusfile, gamma_table, overwrite_flg)
+function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwrite_flg,force_proceed_flag)
 
-% function StereoScreening(subjID, acq, :displayfile, :stimlusfile, :gamma_table, :overwrite_flg)
+% function StereoScreening(subjID,acq,:displayfile,:stimlusfile,:gamma_table,:overwrite_flg,:force_proceed_flag)
 % (: is optional)
 %
 % Displays rectangular planes with binocular disparities (+/- arcmings) for testing psychophysical disparity
@@ -10,17 +10,16 @@ function StereoScreening(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 %
 % You can only run this script on Windows OS due to the current psignifit tool compatibility implemented in
 % this script. Before running the test, please add a path to the psignifit executables to you 'PATH'
-% environmental variable (or you can remove comment symbol around the line #210 and #934 but pleaes be careful).
+% environmental variable (or you can uncomment setenv() descriptions to set the environmental variable
+% from this script).
 %
 %
 % [input variables]
 % sujID         : ID of subject, string, such as 's01'
 % acq           : acquisition number (design file number),
 %                 a integer, such as 1, 2, 3, ...
-% displayfile   : (optional) display condition file,
-%                 *.m file, such as 'shadow_display_fmri.m'
-% stimulusfile  : (optional) stimulus condition file,
-%                 *.m file, such as 'shadow_stimulus_exp1.m'
+% displayfile   : (optional) display condition file, such as 'shadow_display_fmri.m'
+% stimulusfile  : (optional) stimulus condition file, such as 'shadow_stimulus_exp1.m'
 % gamma_table   : (optional) table(s) of gamma-corrected video input values (Color LookupTable).
 %                 256(8-bits) x 3(RGB) x 1(or 2,3,... when using multiple displays) matrix
 %                 or a *.mat file specified with a relative path format. e.g. '/gamma_table/gamma1.mat'
@@ -34,12 +33,15 @@ function StereoScreening(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 %                 file with the same acquisition number will be overwritten by the previous one.
 %                 if 0, the existing file will be backed-up by adding a prefix '_old' at the tail
 %                 of the file. 0 by default.
+% force_proceed_flag : (optional) whether proceeding stimulus presentatin without waiting for
+%                 the experimenter response (e.g. presesing the ENTER key) or a trigger.
+%                 if 1, the stimulus presentation will be automatically carried on.
 %
 % !!! NOTE !!!!
 % displayfile & stimulusfile should be located at
 % ./subjects/(subjID)/
-% as ./subjects/(subjID)/nearfar_display_fmri.m
-%    ./subjects/(subjID)/nearfar_stimuli.m
+% like ./subjects/(subjID)/nearfar_display.m
+%      ./subjects/(subjID)/nearfar_stimulus.m
 %
 %
 % [output variables]
@@ -49,7 +51,7 @@ function StereoScreening(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 % [output files]
 % 1. behavioral result
 %    stored ./subjects/(subjID)/results/(today)
-%    as ./subjects/(subjID)/results/(today)/(subjID)_exp_{near|far|mixed}_results_run_(run_num).mat
+%    as ./subjects/(subjID)/results/(today)/(subjID)_StereoScreening_results_run_(run_num).mat
 %
 %
 % [example]
@@ -72,6 +74,8 @@ function StereoScreening(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 % % display mode, one of "mono", "dual", "dualparallel", "dualcross", "cross", "parallel", "redgreen", "greenred",
 % % "redblue", "bluered", "shutter", "topbottom", "bottomtop", "interleavedline", "interleavedcolumn"
 % dparam.ExpMode='shutter';%'cross';
+%
+% dparam.scrID=1; % screen ID, generally 0 for a single display setup, 1 for dual display setup
 %
 % % a method to start stimulus presentation
 % % 0:ENTER/SPACE, 1:Left-mouse button, 2:the first MR trigger pulse (CiNet),
@@ -168,13 +172,14 @@ function StereoScreening(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 % %%% RGB for background patches
 % sparam.patch_size=[30,30];   % background patch size, [height,width] in pixels
 % sparam.patch_num=[20,20];    % the number of background patches along vertical and horizontal axis
-% sparam.color1=[255,255,255]; % 1x3 matrices
-% sparam.color2=[0,0,0];       % 1x3 matrices
+% sparam.patch_color1=[255,255,255]; % 1x3 matrices
+% sparam.patch_color2=[0,0,0];       % 1x3 matrices
 %
-% %%% for creating disparity & shadow
-% sparam.ipd=6.4;
-% sparam.pix_per_cm=57.1429;
-% sparam.vdist=65;
+% %%% size parameters
+% run(fullfile(fileparts(mfilename('fullpath')),'sizeparams'));
+% %sparam.ipd=6.4;
+% %sparam.pix_per_cm=57.1429;
+% %sparam.vdist=65;
 %
 %
 % [HOWTO create stimulus files]
@@ -209,10 +214,16 @@ function StereoScreening(subjID, acq, displayfile, stimulusfile, gamma_table, ov
 
 clear global; clear mex;
 if nargin<2, help(mfilename()); return; end
+if nargin<3 || isempty(displayfile), displayfile=[]; end
+if nargin<4 || isempty(stimulusfile), stimulusfile=[]; end
+if nargin<5 || isempty(gamma_table), gamma_table=[]; end
 if nargin<6 || isempty(overwrite_flg), overwrite_flg=0; end
+if nargin<7 || isempty(force_proceed_flag), force_proceed_flag=0; end
 
-% check the aqcuisition number.
+% check the aqcuisition number
 if acq<1, error('Acquistion number must be integer and greater than zero'); end
+
+% check the subject directory
 if ~exist(fullfile(pwd,'subjects',subjID),'dir'), error('can not find subj directory. check input variable.'); end
 
 
@@ -240,7 +251,7 @@ resultDir=fullfile(rootDir,'subjects',num2str(subjID),'results',today);
 if ~exist(resultDir,'dir'), mkdir(resultDir); end
 
 % record the output window
-logfname=fullfile(resultDir,[num2str(subjID),'_near_far_rectangle_results_run_',num2str(acq,'%02d'),'.log']);
+logfname=fullfile(resultDir,[num2str(subjID),'_StereoScreening_run_',num2str(acq,'%02d'),'.log']);
 diary(logfname);
 warning off; %#ok warning('off','MATLAB:dispatcher:InexactCaseMatch');
 
@@ -270,7 +281,7 @@ InitializeRandomSeed();
 %%%% Reset display Gamma-function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if nargin<5 || isempty(gamma_table)
+if isempty(gamma_table)
   gamma_table=repmat(linspace(0.0,1.0,256),3,1); %#ok
   GammaResetPTB(1.0);
 else
@@ -279,179 +290,78 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% 1. check input variables,
-%%%% 2. read a condition file,
-%%%% 3. check the validity of input variables,
-%%%% 4. store information about directories & design file,
-%%%% 5. and load design & condition file.
+%%%% Validate dparam (displayfile) and sparam (stimulusfile) structures
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% check the number of nargin
-if nargin <= 1
-  error('takes at least 2 arguments: StereoScreening(subjID,acq,:displayfile,:stimulusfile,:gamma_table,:overwrite_flg)');
-elseif nargin > 6
-  error('takes at most 6 arguments: StereoScreening(subjID,acq,:displayfile,:stimulusfile,:gamma_table,:overwrite_flg)');
-else
-  if nargin == 2
-    useDisplayFile = false;
-    useStimulusFile = false;
-  end
-  if nargin >= 3
-    % reading display (presentation) parameters from file
-    if strcmp(displayfile(end-1:end),'.m')
-      dfile = fullfile(rootDir,'subjects',subjID,displayfile);
-    else
-      dfile = fullfile(rootDir,'subjects',subjID,[displayfile,'.m']);
-    end
-    [is_exist, message] = IsExistYouWant(dfile,'file');
-    if is_exist
-      useDisplayFile = true;
-    else
-      error(message);
-    end
-  end
-  if nargin >= 4
-    % reading stimulus generation parameters from file
-    if strcmp(stimulusfile(end-1:end),'.m')
-      sfile = fullfile(rootDir,'subjects',subjID,stimulusfile);
-    else
-      sfile = fullfile(rootDir,'subjects',subjID,[stimulusfile '.m']);
-    end
-    [is_exist, message] = IsExistYouWant(sfile,'file');
-    if is_exist
-      useStimulusFile = true;
-    else
-      error(message);
-    end
-  end
-end % if nargin
+% check the display/stimulus files
+if ~isempty(displayfile)
+  if ~strcmpi(displayfile(end-1:end),'.m'), displayfile=[displayfile,'.m']; end
+  [is_exist,message]=IsExistYouWant(fullfile(rootDir,'subjects',subjID,displayfile),'file');
+  if ~is_exist, error(message); end
+end
 
-% check condition files
+if ~isempty(stimulusfile)
+  if ~strcmpi(stimulusfile(end-1:end),'.m'), stimulusfile=[stimulusfile,'.m']; end
+  [is_exist,message]=IsExistYouWant(fullfile(rootDir,'subjects',subjID,stimulusfile),'file');
+  if ~is_exist, error(message); end
+end
 
-% set display parameters
-if useDisplayFile
+% organize dparam
+dparam=struct(); % initialize
+if ~isempty(displayfile), run(fullfile(rootDir,'subjects',subjID,displayfile)); end % load specific dparam parameters configured for each of the participants
+dparam=ValidateStructureFields(dparam,... % validate fields and set the default values to missing field(s)
+         'ExpMode','shutter',...
+         'scrID',0,...
+         'start_method',1,...
+         'custom_trigger',KbName(84),...
+         'Key1',37,...
+         'Key2',39,...
+         'givefeedback',1,...
+         'fullscr',false,...
+         'ScrHeight',1200,...
+         'ScrWidth',1920);
 
-  % load displayfile
-  run(fullfile(rootDir,'subjects',subjID,displayfile));
+% organize sparam
+sparam=struct(); % initialize
+if ~isempty(stimulusfile), run(fullfile(rootDir,'subjects',subjID,stimulusfile)); end % load specific sparam parameters configured for each of the participants
+sparam=ValidateStructureFields(sparam,... % validate fields and set the default values to missing field(s)
+         'outerRectFieldSize',[8,8],...
+         'innerRectFieldSize',[4,4],...
+         'gapRectFieldSize',[0,0],...
+         'base_disparity',0,...
+         'disparity',[8,  4,  2,  1, 0.5, -0.5, -1, -2, -4, -8],...
+         'numTrials',30,...
+         'dotRadius',[0.05,0.05],...
+         'dotDens',2,...
+         'colors',[255,0,128],...
+         'oversampling_ratio',2,...
+         'noise_mode','none',...
+         'noise_ratio',30,...
+         'noise_mean',0,...
+         'noise_sd',5,...
+         'noise_method','add',...
+         'initial_fixation_time',1000,...
+         'condition_duration',2000,...
+         'stim_on_duration',1000,...
+         'BetweenDuration',500,...
+         'fixsize',24,...
+         'fixlinesize',[12,2],...
+         'fixcolor',[255,255,255],...
+         'bgcolor',[128,128,128],...
+         'patch_size',[30,30],...
+         'patch_num',[20,20],...
+         'patch_color1',[255,255,255],...
+         'patch_color2',[0,0,0],...
+         'ipd',6.4,...
+         'pix_per_cm',57.1429,...
+         'vdist',65);
 
-else  % if useDisplayFile
-
-  % display mode, one of "mono", "dual", "dualparallel", "dualcross", "cross", "parallel", "redgreen", "greenred",
-  % "redblue", "bluered", "shutter", "topbottom", "bottomtop", "interleavedline", "interleavedcolumn"
-  dparam.ExpMode='shutter';%'cross';
-
-  % a method to start stimulus presentation
-  % 0:ENTER/SPACE, 1:Left-mouse button, 2:the first MR trigger pulse (CiNet),
-  % 3:waiting for a MR trigger pulse (BUIC) -- checking onset of pin #11 of the parallel port,
-  % or 4:custom key trigger (wait for a key input that you specify as tgt_key).
-  dparam.start_method=1;
-
-  % a pseudo trigger key from the MR scanner when it starts, only valid when dparam.start_method=4;
-  dparam.custom_trigger=KbName(84);
-
-  %% keyboard settings
-  dparam.Key1=37; % key 1 = near
-  dparam.Key2=39; % key 2 = far
-
-  %% whether giving correct/incorrect feedback
-  % 0 = no feedback, 1 = giving correct (green fixation and high-tone sound) or incorrect(red fixation and low-tone sound) feedbacks
-  dparam.givefeedback=1;
-
-  % screen settings
-
-  %%% whether displaying the stimuli in full-screen mode or as is (the precise resolution), 'true' or 'false' (true)
-  dparam.fullscr=false;
-
-  %%% the resolution of the screen height
-  dparam.ScrHeight=1200;
-
-  %% the resolution of the screen width
-  dparam.ScrWidth=1920;
-
-end % if useDisplayFile
-
-% set stimulus parameters
-if useStimulusFile
-
-  % load stimulusfile
-  tdir=fullfile(rootDir,'subjects',subjID);
-  run(strcat(tdir,filesep(),stimulusfile));
-  clear tdir;
-
-  % change unit from msec to sec.
-  sparam.initial_fixation_time = sparam.initial_fixation_time/1000; %#ok
-  sparam.condition_duration = sparam.condition_duration/1000;
-  sparam.BetweenDuration = sparam.BetweenDuration/1000;
-  sparam.stim_on_duration = sparam.stim_on_duration/1000;
-
-  sparam.stim_off_duration = sparam.condition_duration - sparam.stim_on_duration;
-
-else  % if useStimulusFile
-
-  % otherwise, set default variables
-
-  %%% image size
-  sparam.outerRectFieldSize=[8,8]; % target stimulus size in deg, [row,col]
-  sparam.innerRectFieldSize=[4,4]; % target stimulus size in deg, [row,col]
-  sparam.gapRectFieldSize=[0,0];   % widths [row(top and bottom),col(right and left)] of the gap between inner and outer rectangles in deg (if 0, no gap). gapRectFieldSize + innerRectFieldSize < outerRectFieldSize
-  sparam.base_disparity=0;         % target base disparity in deg (if non-zero, the target plane is located to near/far side compared to the fixation plane)
-  sparam.disparity=[8,  4,  2,  1, 0.5, -0.5, -1, -2, -4, -8]; % target disparities in arcmin
-
-  %%% the number of trials for each stimulus condition (see stimulusfile, sparam.disparity)
-  sparam.numTrials=30;
-
-  %%% RDS parameters
-  sparam.dotRadius=[0.05,0.05]; % radius of RDS's white/black ovals
-  sparam.dotDens=2; % deinsity of dot in RDS image (1-100)
-  sparam.colors=[255,0,128]; % RDS colors [dot1,dot2,background](0-255)
-  sparam.oversampling_ratio=2; % oversampling_ratio for fine scale RDS images, [val]
-
-  %%% RDS noise paramters
-  % when sparam.noise_mode='none' (no noise condition), all parameters related to noise are ignored.
-  % when sparam.noise_mode='anti' (anticorrelated (left/right dot colors are flipped) RDSs are presented), only sparam.noise_ratio is used in generating RDSs.
-  % when sparam.noise_mode='snr'  (noises are added in disparities), please set all the noise-related paramters carefully.
-  sparam.noise_mode='none';  % one of 'none', 'anti', and 'snr'
-  sparam.noise_ratio=30;     % percentage (0-100) of noises in the RDS, used when sparam.noise_mode='anti' or sparam.noise_mode='snr'
-  sparam.noise_mean=0;       % noise mean in disparity (arcmin), used only when sparam.noise_mode='snr'
-  sparam.noise_sd=5;         % noise SD in disparity (arcmin), used only when sparam.noise_mode='snr'
-  sparam.noise_method='add'; % one of 'add' and 'replace', used only when sparam.noise_mode='snr'
-
-  % stimulus display durations in msec
-
-  % initial fixation duration in msec
-  sparam.initial_fixation_time=1;
-
-  %%% duration in msec for each condition
-  sparam.condition_duration=2;
-
-  %%% duration in msec for simulus ON period for each trial, integer (1)
-  sparam.stim_on_duration=1;
-
-  %%% duration in msec for each trial
-  sparam.BetweenDuration=0.5;
-
-  sparam.stim_off_duration = sparam.condition_duration - sparam.stim_on_duration;
-
-  %%% fixation color
-  sparam.fixsize=24; % radius in pixels
-  sparam.fixlinesize=[12,2]; % [height,width] of the fixation line in pixel
-  sparam.fixcolor=[255,255,255];
-
-  %%% background color
-  sparam.bgcolor=[128,128,128];
-
-  %%% RGB for background patches
-  sparam.patch_size=[30,30];   % background patch size, [height,width] in pixels
-  sparam.patch_num=[20,20];    % the number of background patches along vertical and horizontal axis
-  sparam.color1=[255,255,255]; % 1x3 matrices
-  sparam.color2=[0,0,0];       % 1x3 matrices
-
-  %%% for creating disparity & shadow
-  sparam.ipd=6.4;
-  sparam.pix_per_cm=57.1429;
-  sparam.vdist=65;
-
-end % if useStimulusFile
+% change unit from msec to sec.
+sparam.initial_fixation_time = sparam.initial_fixation_time/1000; %#ok
+sparam.condition_duration    = sparam.condition_duration/1000;
+sparam.BetweenDuration       = sparam.BetweenDuration/1000;
+sparam.stim_on_duration      = sparam.stim_on_duration/1000;
+sparam.stim_off_duration     = sparam.condition_duration - sparam.stim_on_duration;
 
 % set the number of conditions
 sparam.numConds=numel(sparam.disparity);
@@ -460,12 +370,16 @@ sparam.numConds=numel(sparam.disparity);
 dparam.RunScript = mfilename();
 sparam.RunScript = mfilename();
 
-% validating the input variables
+% validating the parameters
 if sparam.gapRectFieldSize+sparam.innerRectFieldSize >= sparam.outerRectFieldSize
   error('sparam.gapRectFieldSize + sparam.innerRectFieldSize should be smaller than sparam.outerRectFieldSize. check the contents of sparam.');
 end
 
-% displaying the Presentation Parameters
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Displaying the presentation parameters you set
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 disp('The Presentation Parameters are as below.');
 fprintf('\n');
 disp('************************************************');
@@ -536,8 +450,10 @@ resps.initialize(event); % initialize responselogger
 %%%% Wait for user reponse to start
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-[user_answer,resps]=resps.wait_to_proceed();
-if ~user_answer, diary off; return; end
+if ~force_proceed_flag
+  [user_answer,resps]=resps.wait_to_proceed();
+  if ~user_answer, diary off; return; end
+end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -547,7 +463,7 @@ if ~user_answer, diary off; return; end
 %Screen('Preference', 'SkipSyncTests', 1);
 
 % open the Screen(s)
-[winPtr,winRect,nScr,dparam.fps,dparam.ifi,initDisplay_OK]=InitializePTBDisplays(dparam.ExpMode,sparam.bgcolor,0,[],1);
+[winPtr,winRect,nScr,dparam.fps,dparam.ifi,initDisplay_OK]=InitializePTBDisplays(dparam.ExpMode,sparam.bgcolor,0,[],dparam.scrID);
 if ~initDisplay_OK, error('Display initialization error. Please check your exp_run parameter.'); end
 HideCursor();
 
@@ -638,7 +554,7 @@ aperture_size(1)=2*( p_height*ceil(size(rect_field{1},1)/2/p_height) );
 aperture_size(2)=2*( p_width*ceil(size(rect_field{1},2)./sparam.oversampling_ratio/2/p_width) );
 
 bgimg = CreateBackgroundImage([dparam.ScrHeight,dparam.ScrWidth],...
-          aperture_size,sparam.patch_size,sparam.bgcolor,sparam.color1,sparam.color2,sparam.fixcolor,sparam.patch_num,0,0,0);
+          aperture_size,sparam.patch_size,sparam.bgcolor,sparam.patch_color1,sparam.patch_color2,sparam.fixcolor,sparam.patch_num,0,0,0);
 background = Screen('MakeTexture',winPtr,bgimg{1});
 
 

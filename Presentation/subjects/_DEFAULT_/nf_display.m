@@ -9,6 +9,8 @@
 % "redblue", "bluered", "shutter", "topbottom", "bottomtop", "interleavedline", "interleavedcolumn"
 dparam.ExpMode='shutter';%'cross';
 
+dparam.scrID=1; % screen ID, generally 0 for a single display setup, 1 for dual display setup
+
 % a method to start stimulus presentation
 % 0:ENTER/SPACE, 1:Left-mouse button, 2:the first MR trigger pulse (CiNet),
 % 3:waiting for a MR trigger pulse (BUIC) -- checking onset of pin #11 of the parallel port,
