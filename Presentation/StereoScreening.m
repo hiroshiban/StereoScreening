@@ -250,14 +250,12 @@ rootDir=fileparts(mfilename('fullpath'));
 % check the display/stimulus files
 if ~isempty(displayfile)
   if ~strcmpi(displayfile(end-1:end),'.m'), displayfile=[displayfile,'.m']; end
-  [is_exist,message]=IsExistYouWant(fullfile(rootDir,'subjects',subjID,displayfile),'file');
-  if ~is_exist, error(message); end
+  if ~exist(fullfile(rootDir,'subjects',subjID,displayfile),'file'), error('displayfile not found. check the input variable.'); end
 end
 
 if ~isempty(stimulusfile)
   if ~strcmpi(stimulusfile(end-1:end),'.m'), stimulusfile=[stimulusfile,'.m']; end
-  [is_exist,message]=IsExistYouWant(fullfile(rootDir,'subjects',subjID,stimulusfile),'file');
-  if ~is_exist, error(message); end
+  if ~exist(fullfile(rootDir,'subjects',subjID,stimulusfile),'file'), error('stimulusfile not found. check the input variable.'); end
 end
 
 
@@ -566,7 +564,7 @@ if ~isnan(sparam.reference_disparity)
   rect_height_ref=[CalcDistFromDisparity(sparam.ipd,sparam.reference_disparity+sparam.base_disparity,sparam.vdist),...
                CalcDistFromDisparity(sparam.ipd,sparam.base_disparity,sparam.vdist)]; % unit: cm
   rect_field_ref=nf_CreateRectField(sparam.outerRectFieldSize,sparam.innerRectFieldSize,sparam.gapRectFieldSize,rect_height_ref,sparam.pix_per_deg,sparam.oversampling_ratio); % unit: cm
-  [pos_ref{1},pos_ref{2}]=RayTrace_ScreenPos_X_MEX(rect_field,ipd,vdist,pix_per_cm_x,0);
+  [pos_ref{1},pos_ref{2}]=RayTrace_ScreenPos_X_MEX(rect_field_ref,ipd,vdist,pix_per_cm_x,0);
 end
 
 
@@ -647,12 +645,12 @@ fixRect=[0,0,fixSize]; % used to display the central fixation point
 % saving the current parameters
 % (this is required to analyze part of the data obtained even when the experiment is interrupted unexpectedly)
 fprintf('saving the stimulus generation and presentation parameters...');
-savefname=fullfile(resultDir,[num2str(subjID),'_near_far_rectangle_results_run_',num2str(acq,'%02d'),'.mat']);
+savefname=fullfile(resultDir,[num2str(subjID),'_stereo_screening_results_run_',num2str(acq,'%02d'),'.mat']);
 
 % backup the old file(s)
 if ~overwrite_flg
   BackUpObsoleteFiles(fullfile('subjects',num2str(subjID),'results',today),...
-                      [num2str(subjID),'_near_far_rectangle_results_run_',num2str(acq,'%02d'),'.mat'],'_old');
+                      [num2str(subjID),'_stereo_screening_results_run_',num2str(acq,'%02d'),'.mat'],'_old');
 end
 
 % save the current parameters
@@ -689,11 +687,13 @@ Screen('Flip', winPtr,[],[],[]);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % add time stamp (this also works to load add_event method in memory in advance of the actual displays)
+fprintf('\nWaiting for the start...\n');
 event=event.add_event('Experiment Start',strcat([datestr(now,'yymmdd'),' ',datestr(now,'HH:mm:ss')]),[]);
 
 % waiting for stimulus presentation
 resps.wait_stimulus_presentation(dparam.start_method,dparam.custom_trigger);
 PlaySound(1);
+fprintf('\nExperiment running...\n');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -709,19 +709,22 @@ targetTime=the_experiment_start;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % wait for the initial fixation
-event=event.add_event('Initial Fixation',[]);
+if sparam.initial_fixation_time~=0
+  event=event.add_event('Initial Fixation',[]);
+  fprintf('\nfixation\n\n');
 
-for nn=1:1:nScr
-  Screen('SelectStereoDrawBuffer',winPtr,nn-1);
-  Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
-  Screen('DrawTexture',winPtr,fcross{1,nn},[],CenterRect(fixRect,winRect));
+  for nn=1:1:nScr
+    Screen('SelectStereoDrawBuffer',winPtr,nn-1);
+    Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
+    Screen('DrawTexture',winPtr,fcross{1,nn},[],CenterRect(fixRect,winRect));
+  end
+  Screen('DrawingFinished',winPtr);
+  Screen('Flip',winPtr,[],[],[]);
+  
+  % wait for the initial fixation
+  targetTime=targetTime+sparam.initial_fixation_time;
+  while (GetSecs() < targetTime), [resps,event]=resps.check_responses(event); end
 end
-Screen('DrawingFinished',winPtr);
-Screen('Flip',winPtr,[],[],[]);
-
-% wait for the initial fixation
-targetTime = targetTime + sparam.initial_fixation_time;
-while (GetSecs() < targetTime), [resps,event]=resps.check_responses(event); end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -818,6 +821,8 @@ for currenttrial=1:1:numel(design)
   % Stimulus display & animation
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+  fprintf('TRIAL [%03d]: ID %03d, disparity %.2f arcmin, response ',currenttrial,stimID,disparity);
+
   tStart=GetSecs();
   event=event.add_event('Start Trial',disparity);
 
@@ -835,7 +840,7 @@ for currenttrial=1:1:numel(design)
     for nn=1:1:nScr
       Screen('SelectStereoDrawBuffer',winPtr,nn-1);
       Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
-      if stim_order(pp)==1 % target
+      if pp==1 % target
         Screen('DrawTexture',winPtr,stim{nn},[],CenterRect(stimRect,winRect));
       else % reference
         Screen('DrawTexture',winPtr,stim_ref{nn},[],CenterRect(stimRect,winRect));
@@ -919,6 +924,12 @@ for currenttrial=1:1:numel(design)
         respFlag=0;
       end
     end
+  end
+
+  if respFlag==1 % correct response
+    fprintf('correct\n');
+  else % if respFlag==-1 or 0 % incorrect response
+    fprintf('incorrect\n');
   end
 
   % giving a correct/incorrect feedback
@@ -1051,7 +1062,11 @@ set(gca,'XTickLabel',disparities);
 set(gca,'YLim',[0-0.02,1+0.02]);
 set(gca,'YTick',0:0.2:1);
 
-title(sprintf('%s: Disparity discrimination performance, Thr: %.2f, slope: %.2f (arcmin)',num2str(subjID),threshold,slope));
+if ~isnan(sparam.reference_disparity)
+  title(sprintf('%s: Disparity discrimination performance (2AFC), Thr: %.2f, slope: %.2f (arcmin)',num2str(subjID),threshold,slope));
+else
+  title(sprintf('%s: Disparity discrimination performance, Thr: %.2f, slope: %.2f (arcmin)',num2str(subjID),threshold,slope));
+end
 xlabel('Disparity [arcmin (nagative is near)]');
 ylabel('Far-selection ratio [0.0 -1.0]');
 
