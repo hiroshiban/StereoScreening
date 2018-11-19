@@ -3,7 +3,7 @@ function OK=run_exp(subj,acq_ids)
 % function run_exp(subj,acq_ids)
 % (: is optional)
 %
-% This is a batch function to run NearFarRectangleBehavior function.
+% This is a wrapper to run StereoScreening function.
 %
 % It displays rectangular planes with binocular disparity (+/- arcmings)
 % for testing psychophysical disparity accuracy.
@@ -16,11 +16,10 @@ function OK=run_exp(subj,acq_ids)
 % acq_ids : acquisition number (run), 1,2,3,...
 %
 % [output]
-% OK      : whether this script runned
-%           without any error [true/false]
+% OK      : whether this script is completed without any error [true/false]
 %
 % Created    : "2010-06-25 08:37:58 ban"
-% Last Update: "2018-10-26 12:49:03 ban"
+% Last Update: "2018-11-19 15:33:23 ban"
 
 % constants, you can change these for your own purpose.
 stim_fname='nf_stimulus';
@@ -29,14 +28,21 @@ disp_fname='nf_display';
 % set the program body
 run_script='StereoScreening';
 
+
+% ********************************************************************************************************
 %% check the input variables
+% ********************************************************************************************************
+
 if nargin<1, help(mfilename()); OK=false; return; end
 if nargin<2 || isempty(acq_ids)
   warning('MATLAB:acq_ids_warning','warning: acq_ids is not specified. using 1...\n');
   acq_ids=1;
 end
 
+
+% ********************************************************************************************************
 %% check directory with subject name
+% ********************************************************************************************************
 
 % [NOTE]
 % if the subj directory is not found, create subj directory, copy all condition
@@ -66,6 +72,7 @@ if ~exist(subj_dir,'dir')
   copyfile(fullfile(pwd,'subjects','_DEFAULT_'),subj_dir);
 end
 
+
 % ********************************************************************************************************
 % *** set gamma table. please change the line below to use the actual measuments of the display gamma. ***
 % ********************************************************************************************************
@@ -76,7 +83,11 @@ load(fullfile('..','gamma_table','ASUS_ROG_Swift_PG278Q','181003','cbs','gammata
 %load(fullfile('..','gamma_table','MEG_B1','151225','cbs','gammatablePTB.mat'));
 %gammatable=repmat(linspace(0.0,1.0,256),3,1)'; %#ok % a simple linear gamma
 
+
+% ********************************************************************************************************
 %% run stimulus presentations
+% ********************************************************************************************************
+
 % run Experiment
 for ii=acq_ids
   main_exp_name=sprintf('%s(''%s'',%d,''%s'',''%s'',gammatable);',run_script,subj,ii,disp_fname,stim_fname);
