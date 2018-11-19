@@ -17,6 +17,12 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 %
 % [input variables]
 % sujID         : ID of subject, string, such as 's01'
+%                 !!!!!!!!!!!!!!!!!! IMPORTANT NOTE !!!!!!!!!!!!!!!!!!!!!!!!
+%                 !!! if 'debug' (case insensitive) is included          !!!
+%                 !!! in subjID string, this program runs as DEBUG mode; !!!
+%                 !!! stimulus images are saved as *.png format at       !!!
+%                 !!! ~/CurvatureShading/Presentation/images             !!!
+%                 !!!!!!!!!!!!!!!!!! IMPORTANT NOTE !!!!!!!!!!!!!!!!!!!!!!!!
 % acq           : acquisition number (design file number),
 %                 a integer, such as 1, 2, 3, ...
 % displayfile   : (optional) display condition file, such as 'shadow_display_fmri.m'
@@ -569,6 +575,175 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Debug codes
+%%%% just to save each images as *.png format files.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% %%%%%% DEBUG codes start here. The codes below are just to get stimulus images and check the dparam and sparam parameters
+% note: debug stimuli have no jitters in binocular disparities
+if strfind(upper(subjID),'DEBUG')
+
+  Screen('CloseAll');
+  ShowCursor();
+
+  imgL=cell(sparam.numConds,1);
+  imgR=cell(sparam.numConds,1);
+  posL=cell(sparam.numConds,1);
+  posR=cell(sparam.numConds,1);
+
+  % target images
+  for ii=1:1:sparam.numConds
+    % generate RDS images
+    if strcmpi(sparam.noise_mode,'none') % generating an intact RDS stimulus
+      [imgL{ii},imgR{ii}]=nf_RDSfastest(pos{ii,1},pos{ii,2},wdot,bdot,dotalpha,dotDens,sparam.colors(3),0,1,1);
+    elseif strcmpi(sparam.noise_mode,'anti') % generating an anticorrelated RDS stimulus
+      [imgL{ii},imgR{ii}]=nf_RDSfastest_with_acor_noise_MEX(pos{ii,1},pos{ii,2},wdot,bdot,dotalpha,dotDens,sparam.noise_ratio,sparam.colors(3));
+    elseif strcmpi(sparam.noise_mode,'snr') % generating a Signal-to-Noise-Ratio(SNR)-modulated RDS stimulus
+      % in SNR RDS stimuli, noise dots are assigned in advance of generating the RDS.
+      obj_idx=find(rect_field{ii}~=0);
+      obj_idx=shuffle(obj_idx);
+      obj_idx=obj_idx(1:round(numel(obj_idx)*sparam.noise_ratio/100));
+      noise_field=sparam.noise_mean+randn(numel(obj_idx),1).*sparam.noise_sd;
+      noise_height=CalcDistFromDisparity(ipd,noise_field,vdist); % unit: cm
+      [noiseL,noiseR]=RayTrace_ScreenPos_X_MEX(noise_height,ipd,vdist,pix_per_cm_x,0);
+
+      posL{ii}=pos{ii,1};
+      posR{ii}=pos{ii,2};
+      if strcmpi(sparam.noise_method,'add') % if you want to add noises on the baseline depths, please use the lines below.
+        posL{ii}(obj_idx)=posL{ii}(obj_idx)+noiseL;
+        posR{ii}(obj_idx)=posR{ii}(obj_idx)+noiseR;
+      elseif strcmpi(sparam.noise_method,'replace') % if you want to replace the baseline depths with generated noises, please use the lines below.
+        posL{ii}(obj_idx)=noiseL;
+        posR{ii}(obj_idx)=noiseR;
+      else
+        error('sparam.noise_method should be one of ''add'' or ''replace''.');
+      end
+      [imgL{ii},imgR{ii}]=nf_RDSfastest(posL{ii},posR{ii},wdot,bdot,dotalpha,dotDens,sparam.colors(3),0,0,1);
+    else
+      error('sparam.noise_mode should be one of ''none'', ''anti'' or ''snr''. check the stimulus file.');
+    end
+  end
+
+  % reference image
+  if ~isnan(sparam.reference_disparity)
+    % generate RDS images
+    if strcmpi(sparam.noise_mode,'none') % generating an intact RDS stimulus
+      [imgL_ref,imgR_ref]=nf_RDSfastest(pos_ref{1},pos_ref{2},wdot,bdot,dotalpha,dotDens,sparam.colors(3),0,1,1);
+    elseif strcmpi(sparam.noise_mode,'anti') % generating an anticorrelated RDS stimulus
+      [imgL_ref,imgR_ref]=nf_RDSfastest_with_acor_noise_MEX(pos_ref{1},pos_ref{2},wdot,bdot,dotalpha,dotDens,sparam.noise_ratio,sparam.colors(3));
+    elseif strcmpi(sparam.noise_mode,'snr') % generating a Signal-to-Noise-Ratio(SNR)-modulated RDS stimulus
+      % in SNR RDS stimuli, noise dots are assigned in advance of generating the RDS.
+      obj_idx=find(rect_field_ref~=0);
+      obj_idx=shuffle(obj_idx);
+      obj_idx=obj_idx(1:round(numel(obj_idx)*sparam.noise_ratio/100));
+      noise_field=sparam.noise_mean+randn(numel(obj_idx),1).*sparam.noise_sd;
+      noise_height=CalcDistFromDisparity(ipd,noise_field,vdist); % unit: cm
+      [noiseL,noiseR]=RayTrace_ScreenPos_X_MEX(noise_height,ipd,vdist,pix_per_cm_x,0);
+
+      posL_ref=pos_ref{1};
+      posR_ref=pos_ref{2};
+      if strcmpi(sparam.noise_method,'add') % if you want to add noises on the baseline depths, please use the lines below.
+        posL_ref(obj_idx)=posL_ref(obj_idx)+noiseL;
+        posR_ref(obj_idx)=posR_ref(obj_idx)+noiseR;
+      elseif strcmpi(sparam.noise_method,'replace') % if you want to replace the baseline depths with generated noises, please use the lines below.
+        posL_ref(obj_idx)=noiseL;
+        posR_ref(obj_idx)=noiseR;
+      else
+        error('sparam.noise_method should be one of ''add'' or ''replace''.');
+      end
+      [imgL_ref,imgR_ref]=nf_RDSfastest(posL_ref,posR_ref,wdot,bdot,dotalpha,dotDens,sparam.colors(3),0,0,1);
+    else
+      error('sparam.noise_mode should be one of ''none'', ''anti'' or ''snr''. check the stimulus file.');
+    end
+  end
+
+  % save stimuli as *.mat
+  save_dir=fullfile(pwd,'images');
+  if ~exist(save_dir,'dir'), mkdir(save_dir); end
+  save(fullfile(save_dir,'stereo_screening_stimuli.mat'),'design','dparam','sparam','imgL','imgR','posL','posR','wdot','bdot','dotalpha');
+  if ~isnan(sparam.reference_disparity)
+    save(fullfile(save_dir,'stereo_screening_stimuli.mat'),'-append','imgL_ref','imgR_ref','posL_ref','posR_ref');
+  end
+
+  % plotting/saving figures of the target stimuli
+  for ii=1:1:sparam.numConds
+    % save generated figures as png
+    if ~strcmpi(dparam.ExpMode,'redgreen') && ~strcmpi(dparam.ExpMode,'redblue')
+      M = [imgL{ii},sparam.bgcolor(3)*ones(size(imgL{ii},1),20),imgR{ii},sparam.bgcolor(3)*ones(size(imgL{ii},1),20),imgL{ii}];
+      % im_h = imagesc(M,[0 255]);
+      % axis off
+      % % truesize is necessary to avoid automatic scaling
+      % size_one2one(im_h);
+      % colormap(gray);
+      % shg;
+    else
+      M=reshape([imgL{ii},imgR{ii},sparam.bgcolor(3)*ones(size(imgL{ii}))],[size(imgL{ii}),3]); % RGB;
+      % im_h = imagesc(M);
+      % axis off
+      % % truesize is necessary to avoid automatic scaling
+      % size_one2one(im_h);
+      % shg;
+    end
+
+    figure; hold on;
+    imfig=imshow(M,[0,255]); %#ok
+    if ~strcmpi(dparam.ExpMode,'redgreen') && ~strcmpi(dparam.ExpMode,'redblue')
+      fname=sprintf('stereo_screening_cond_%03d.png',ii);
+    else
+      fname=sprintf('stereo_screening_red_green_cond_%03d.png',ii);
+    end
+    %saveas(imfig,[save_dir,filesep(),fname,'.png'],'png');
+    imwrite(M,[save_dir,filesep(),fname,'.png'],'png');
+  end % for ii=1:1:sparam.numConds
+
+  % plotting/saving figures of the reference stimulus
+  if ~isnan(sparam.reference_disparity)
+    % save generated figures as png
+    if ~strcmpi(dparam.ExpMode,'redgreen') && ~strcmpi(dparam.ExpMode,'redblue')
+      M = [imgL_ref,sparam.bgcolor(3)*ones(size(imgL_ref,1),20),imgR_ref,sparam.bgcolor(3)*ones(size(imgL_ref,1),20),imgL_ref];
+      % im_h = imagesc(M,[0 255]);
+      % axis off
+      % % truesize is necessary to avoid automatic scaling
+      % size_one2one(im_h);
+      % colormap(gray);
+      % shg;
+    else
+      M=reshape([imgL_ref,imgR_ref,sparam.bgcolor(3)*ones(size(imgL_ref))],[size(imgL_ref),3]); % RGB;
+      % im_h = imagesc(M);
+      % axis off
+      % % truesize is necessary to avoid automatic scaling
+      % size_one2one(im_h);
+      % shg;
+    end
+
+    figure; hold on;
+    imfig=imshow(M,[0,255]); %#ok
+    if ~strcmpi(dparam.ExpMode,'redgreen') && ~strcmpi(dparam.ExpMode,'redblue')
+      fname='stereo_screening_reference.png';
+    else
+      fname='stereo_screening_red_green_reference.png';
+    end
+    %saveas(imfig,[save_dir,filesep(),fname,'.png'],'png');
+    imwrite(M,[save_dir,filesep(),fname,'.png'],'png');
+  end % if ~isnan(sparam.reference_disparity)
+
+  keyboard;
+
+  % clean up
+  Priority(0);
+  GammaResetPTB(1.0);
+  rmpath(genpath(fullfile(rootDir,'..','Common')));
+  rmpath(fullfile(rootDir,'..','Generation'));
+  rmpath(fullfile(rootDir,'..','mpsignifit'));
+  diary off;
+
+  return;
+
+end % if strfind(upper(subjID),'DEBUG')
+% %%%%%% DEBUG code ends here
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Creating background images
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -720,7 +895,7 @@ if sparam.initial_fixation_time~=0
   end
   Screen('DrawingFinished',winPtr);
   Screen('Flip',winPtr,[],[],[]);
-  
+
   % wait for the initial fixation
   targetTime=targetTime+sparam.initial_fixation_time;
   while (GetSecs() < targetTime), [resps,event]=resps.check_responses(event); end
@@ -787,7 +962,7 @@ for currenttrial=1:1:numel(design)
       [imgL,imgR]=nf_RDSfastest_with_acor_noise_MEX(pos_ref{1},pos_ref{2},wdot,bdot,dotalpha,dotDens,sparam.noise_ratio,sparam.colors(3));
     elseif strcmpi(sparam.noise_mode,'snr') % generating a Signal-to-Noise-Ratio(SNR)-modulated RDS stimulus
       % in SNR RDS stimuli, noise dots are assigned in advance of generating the RDS.
-      obj_idx=find(rect_field_ref{stimID}~=0);
+      obj_idx=find(rect_field_ref~=0);
       obj_idx=shuffle(obj_idx);
       obj_idx=obj_idx(1:round(numel(obj_idx)*sparam.noise_ratio/100));
       noise_field=sparam.noise_mean+randn(numel(obj_idx),1).*sparam.noise_sd;
@@ -1115,6 +1290,7 @@ catch
   keyboard;
   rmpath(genpath(fullfile(rootDir,'..','Common')));
   rmpath(fullfile(rootDir,'..','Generation'));
+  rmpath(fullfile(rootDir,'..','mpsignifit'));
   %psychrethrow(psychlasterror);
   return
 end % try..catch
