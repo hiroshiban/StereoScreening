@@ -3,8 +3,9 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % function StereoScreening(subjID,acq,:displayfile,:stimlusfile,:gamma_table,:overwrite_flg,:force_proceed_flag)
 % (: is optional)
 %
-% Displays rectangular planes with binocular disparities (+/- arcmings) for testing psychophysical disparity
-% discrimination acuity. This script shoud be used with MATLAB Psychtoolbox version 3 or above.
+% Displays rectangular planes with binocular disparities (+/- arcmings) for testing psychophysical depth
+% discrimination acuity based on binocular disparity.
+% This script shoud be used with MATLAB Psychtoolbox version 3 or above.
 % This is a full update of the old NearFarRectangleBehavior.m so as to be compatible with the new PTB3 toolbox
 % (especially new PsychImaging functions) and new 3D viewing setup with an nVidia graphics card and 3D vision tools.
 %
@@ -19,7 +20,12 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % acq           : acquisition number (design file number),
 %                 a integer, such as 1, 2, 3, ...
 % displayfile   : (optional) display condition file, such as 'shadow_display_fmri.m'
+%                 as an example, please see ~/StereoScreening/subjects/_DEFAULT_/nf_display.m
 % stimulusfile  : (optional) stimulus condition file, such as 'shadow_stimulus_exp1.m'
+%                 all of the stimuli in this script are generated in real-time based on
+%                 the parameters in the stimulus file. For details, please see this
+%                 function and the other function in ../Generation and ../Common directries.
+%                 as an example, please see ~/StereoScreening/subjects/_DEFAULT_/nf_stimulus.m
 % gamma_table   : (optional) table(s) of gamma-corrected video input values (Color LookupTable).
 %                 256(8-bits) x 3(RGB) x 1(or 2,3,... when using multiple displays) matrix
 %                 or a *.mat file specified with a relative path format. e.g. '/gamma_table/gamma1.mat'
@@ -125,8 +131,15 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % sparam.outerRectFieldSize=[8,8]; % target stimulus size in deg, [row,col]
 % sparam.innerRectFieldSize=[4,4]; % target stimulus size in deg, [row,col]
 % sparam.gapRectFieldSize=[0,0];   % widths [row(top and bottom),col(right and left)] of the gap between inner and outer rectangles in deg (if 0, no gap). gapRectFieldSize + innerRectFieldSize < outerRectFieldSize
+%
+% %%% disparity magnitude(s)
 % sparam.base_disparity=0;         % target base disparity in deg (if non-zero, the target plane is located to near/far side compared to the fixation plane)
 % sparam.disparity=[8,  4,  2,  1, 0.5, -0.5, -1, -2, -4, -8]; % target disparities in arcmin
+%
+% % when sparam.reference_disparity is NaN, the task is 1AFC in which participants have tojudge whether the target
+% % is located to near or far, while, when this value is set to a specific disparity (arcmins), the task becomes 2AFC
+% % in which particpants have to judge which of the planes (the first or the second) is located to near.
+% sparam.reference_disparity=NaN;
 %
 % %%% the number of trials for each stimulus condition
 % sparam.numTrials=30;
@@ -182,22 +195,29 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % %sparam.vdist=65;
 %
 %
-% [HOWTO create stimulus files]
-% 1. All of the stimuli are created in this script in real-time
-%    with MATLAB scripts & functions.
-%    see ../Generation & ../Common directries.
-% 2. Stimulus parameters are defined in the display & stimulus file.
+% [note on the stimulus presentation and task]
+% The presentation will start by pressing the start button you defined as sparam.start_method.
+% The stimuli are presented as below,
 %
+% ***************************************************
+% *** 1 AFC (when sparam.reference_disparity=NaN) ***
+% ***************************************************
 %
-% [about stimuli and task]
-% The presentation will start by pressing the left mouse button.
-% Stimuli are presented by default as below
-% stim 1 -- blank -- response -- blank -- stim 2 -- blank -- response ...
+% stim -- blank -- response -- stim -- blank -- response -- stim -- blank -- reseponse ...
 %
-% The task is to discriminate whether the presented rectangular plane
-% is near (closer to you compared to the fixational plane) or far.
+% The task is to judge whether the targe rectangular plane is near (closer to you compared to the fixational plane) or far.
 % - press key 1 or left-mouse-click when the stimulus is to near (key 1/2 are defined in the display file)
-% - press key 2 or right-mouse-click when the stimulus is to far
+% - press key 2 or right-mouse-click when the stimulus is to far.
+%
+% ***************************************************
+% *** 2 AFC (when sparam.reference_disparity is set as to be a real value (reference arcmin)) ***
+% ***************************************************
+%
+% stim(or ref) - blank - stim(or ref) - blank - response - stim(or ref) -blank -- stim(or ref) -- blank -- response ...
+%
+% The task is to judge which (the first or the second) of the rectangular planes is near (closer to you compared to the fixational plane).
+% - press key 1 or left-mouse-click when the first stimulus is to near (key 1/2 are defined in the display file)
+% - press key 2 or right-mouse-click when the second stimulus is to near.
 %
 %
 % [reference]
@@ -212,7 +232,6 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 %%%% Check the input variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-clear global; clear mex;
 if nargin<2, help(mfilename()); return; end
 if nargin<3 || isempty(displayfile), displayfile=[]; end
 if nargin<4 || isempty(stimulusfile), stimulusfile=[]; end
@@ -224,7 +243,22 @@ if nargin<7 || isempty(force_proceed_flag), force_proceed_flag=0; end
 if acq<1, error('Acquistion number must be integer and greater than zero'); end
 
 % check the subject directory
-if ~exist(fullfile(pwd,'subjects',subjID),'dir'), error('can not find subj directory. check input variable.'); end
+if ~exist(fullfile(pwd,'subjects',subjID),'dir'), error('can not find subj directory. check the input variable.'); end
+
+rootDir=fileparts(mfilename('fullpath'));
+
+% check the display/stimulus files
+if ~isempty(displayfile)
+  if ~strcmpi(displayfile(end-1:end),'.m'), displayfile=[displayfile,'.m']; end
+  [is_exist,message]=IsExistYouWant(fullfile(rootDir,'subjects',subjID,displayfile),'file');
+  if ~is_exist, error(message); end
+end
+
+if ~isempty(stimulusfile)
+  if ~strcmpi(stimulusfile(end-1:end),'.m'), stimulusfile=[stimulusfile,'.m']; end
+  [is_exist,message]=IsExistYouWant(fullfile(rootDir,'subjects',subjID,stimulusfile),'file');
+  if ~is_exist, error(message); end
+end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -232,7 +266,6 @@ if ~exist(fullfile(pwd,'subjects',subjID),'dir'), error('can not find subj direc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % add paths to the subfunctions
-rootDir=fileparts(mfilename('fullpath'));
 addpath(genpath(fullfile(rootDir,'..','Common')));
 addpath(fullfile(rootDir,'..','Generation'));
 addpath(fullfile(rootDir,'..','mpsignifit'));
@@ -251,7 +284,7 @@ resultDir=fullfile(rootDir,'subjects',num2str(subjID),'results',today);
 if ~exist(resultDir,'dir'), mkdir(resultDir); end
 
 % record the output window
-logfname=fullfile(resultDir,[num2str(subjID),'_StereoScreening_run_',num2str(acq,'%02d'),'.log']);
+logfname=fullfile(resultDir,[num2str(subjID),'_stereo_screening_run_',num2str(acq,'%02d'),'.log']);
 diary(logfname);
 warning off; %#ok warning('off','MATLAB:dispatcher:InexactCaseMatch');
 
@@ -293,19 +326,6 @@ end
 %%%% Validate dparam (displayfile) and sparam (stimulusfile) structures
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% check the display/stimulus files
-if ~isempty(displayfile)
-  if ~strcmpi(displayfile(end-1:end),'.m'), displayfile=[displayfile,'.m']; end
-  [is_exist,message]=IsExistYouWant(fullfile(rootDir,'subjects',subjID,displayfile),'file');
-  if ~is_exist, error(message); end
-end
-
-if ~isempty(stimulusfile)
-  if ~strcmpi(stimulusfile(end-1:end),'.m'), stimulusfile=[stimulusfile,'.m']; end
-  [is_exist,message]=IsExistYouWant(fullfile(rootDir,'subjects',subjID,stimulusfile),'file');
-  if ~is_exist, error(message); end
-end
-
 % organize dparam
 dparam=struct(); % initialize
 if ~isempty(displayfile), run(fullfile(rootDir,'subjects',subjID,displayfile)); end % load specific dparam parameters configured for each of the participants
@@ -329,6 +349,7 @@ sparam=ValidateStructureFields(sparam,... % validate fields and set the default 
          'innerRectFieldSize',[4,4],...
          'gapRectFieldSize',[0,0],...
          'base_disparity',0,...
+         'reference_disparity',NaN,...
          'disparity',[8,  4,  2,  1, 0.5, -0.5, -1, -2, -4, -8],...
          'numTrials',30,...
          'dotRadius',[0.05,0.05],...
@@ -357,10 +378,10 @@ sparam=ValidateStructureFields(sparam,... % validate fields and set the default 
          'vdist',65);
 
 % change unit from msec to sec.
-sparam.initial_fixation_time = sparam.initial_fixation_time/1000; %#ok
-sparam.condition_duration    = sparam.condition_duration/1000;
-sparam.BetweenDuration       = sparam.BetweenDuration/1000;
-sparam.stim_on_duration      = sparam.stim_on_duration/1000;
+sparam.initial_fixation_time = sparam.initial_fixation_time./1000;
+sparam.condition_duration    = sparam.condition_duration./1000;
+sparam.BetweenDuration       = sparam.BetweenDuration./1000;
+sparam.stim_on_duration      = sparam.stim_on_duration./1000;
 sparam.stim_off_duration     = sparam.condition_duration - sparam.stim_on_duration;
 
 % set the number of conditions
@@ -510,14 +531,6 @@ sparam.cm_per_pix=1/sparam.pix_per_cm;
 % pixles per degree
 sparam.pix_per_deg=round( 1/( 180*atan(sparam.cm_per_pix/sparam.vdist)/pi ) );
 
-% generate the rectangular field
-rect_field=cell(numel(sparam.disparity),1);
-for ii=1:1:numel(sparam.disparity)
-  rect_height=[CalcDistFromDisparity(sparam.ipd,sparam.disparity(ii)+sparam.base_disparity,sparam.vdist),...
-               CalcDistFromDisparity(sparam.ipd,sparam.base_disparity,sparam.vdist)]; % unit: cm
-  rect_field{ii}=nf_CreateRectField(sparam.outerRectFieldSize,sparam.innerRectFieldSize,sparam.gapRectFieldSize,rect_height,sparam.pix_per_deg,sparam.oversampling_ratio); % unit: cm
-end
-
 % adjust parameters for oversampling (this adjustment shoud be done after creating heightfields)
 dotDens=sparam.dotDens/sparam.oversampling_ratio;
 ipd=sparam.ipd*sparam.oversampling_ratio;
@@ -532,10 +545,28 @@ wdot=basedot(:,:,1);     % get only gray scale image (white)
 bdot=basedot(:,:,2);     % get only gray scale image (black)
 dotalpha=basedot(:,:,4)./max(max(basedot(:,:,4))); % get alpha channel value 0-1.0;
 
+%% prepare the target rectangular stimuli
+
+% generate the rectangular field
+rect_field=cell(numel(sparam.disparity),1);
+for ii=1:1:numel(sparam.disparity)
+  rect_height=[CalcDistFromDisparity(sparam.ipd,sparam.disparity(ii)+sparam.base_disparity,sparam.vdist),...
+               CalcDistFromDisparity(sparam.ipd,sparam.base_disparity,sparam.vdist)]; % unit: cm
+  rect_field{ii}=nf_CreateRectField(sparam.outerRectFieldSize,sparam.innerRectFieldSize,sparam.gapRectFieldSize,rect_height,sparam.pix_per_deg,sparam.oversampling_ratio); % unit: cm
+end
+
 % calculate position shifts for each value of heightfield
 pos=cell(numel(sparam.disparity),2); % 2 = left/right
 for ii=1:1:numel(sparam.disparity)
   [pos{ii,1},pos{ii,2}]=RayTrace_ScreenPos_X_MEX(rect_field{ii},ipd,vdist,pix_per_cm_x,0);
+end
+
+%% prepare the reference stimulus
+if ~isnan(sparam.reference_disparity)
+  rect_height_ref=[CalcDistFromDisparity(sparam.ipd,sparam.reference_disparity+sparam.base_disparity,sparam.vdist),...
+               CalcDistFromDisparity(sparam.ipd,sparam.base_disparity,sparam.vdist)]; % unit: cm
+  rect_field_ref=nf_CreateRectField(sparam.outerRectFieldSize,sparam.innerRectFieldSize,sparam.gapRectFieldSize,rect_height_ref,sparam.pix_per_deg,sparam.oversampling_ratio); % unit: cm
+  [pos_ref{1},pos_ref{2}]=RayTrace_ScreenPos_X_MEX(rect_field,ipd,vdist,pix_per_cm_x,0);
 end
 
 
@@ -550,8 +581,8 @@ p_height=round((dparam.ScrHeight-edgeY)/sparam.patch_num(1)); % height in pix of
 edgeX=mod(dparam.ScrWidth,sparam.patch_num(2)); % delete exceeded region
 p_width=round((dparam.ScrWidth-edgeX)/sparam.patch_num(2)); % width in pix of patch_width + interval-X
 
-aperture_size(1)=2*( p_height*ceil(size(rect_field{1},1)/2/p_height) );
-aperture_size(2)=2*( p_width*ceil(size(rect_field{1},2)./sparam.oversampling_ratio/2/p_width) );
+aperture_size(1)=2*( p_height*ceil(size(pos{1,1},1)/2/p_height) );
+aperture_size(2)=2*( p_width*ceil(size(pos{1,1},2)./sparam.oversampling_ratio/2/p_width) );
 
 bgimg = CreateBackgroundImage([dparam.ScrHeight,dparam.ScrWidth],...
           aperture_size,sparam.patch_size,sparam.bgcolor,sparam.patch_color1,sparam.patch_color2,sparam.fixcolor,sparam.patch_num,0,0,0);
@@ -587,11 +618,11 @@ fcross{4,2}=Screen('MakeTexture',winPtr,incorrect_fix_R);
 if dparam.fullscr
   ratio_wid=( winRect(3)-winRect(1) )/dparam.ScrWidth;
   ratio_hei=( winRect(4)-winRect(2) )/dparam.ScrHeight;
-  stimSize =[size(rect_field{1},2)*ratio_wid,size(rect_field{1},1)*ratio_hei].*[1/sparam.oversampling_ratio,1];
+  stimSize =[size(pos{1,1},2)*ratio_wid,size(pos{1,1},1)*ratio_hei].*[1/sparam.oversampling_ratio,1];
   bgSize=[size(bgimg{1},2)*ratio_wid,size(bgimg{1},1)*ratio_hei];
   fixSize=[2*sparam.fixsize*ratio_wid,2*sparam.fixsize*ratio_hei];
 else
-  stimSize=[size(rect_field{1},2),size(rect_field{1},1)].*[1/sparam.oversampling_ratio,1];
+  stimSize=[size(pos{1,1},2),size(pos{1,1},1)].*[1/sparam.oversampling_ratio,1];
   bgSize=[dparam.ScrWidth,dparam.ScrHeight];
   fixSize=[2*sparam.fixsize,2*sparam.fixsize];
 end
@@ -705,6 +736,8 @@ for currenttrial=1:1:numel(design)
 
   tBetweenTrial=GetSecs();
 
+  %% generate the target stimulus
+
   % get the current stimulus parameters
   stimID=design(currenttrial);
   disparity=sparam.disparity(stimID);
@@ -741,6 +774,42 @@ for currenttrial=1:1:numel(design)
   stim{1}=Screen('MakeTexture',winPtr,imgL);
   stim{2}=Screen('MakeTexture',winPtr,imgR);
 
+  %% generate the reference stimulus
+
+  if ~isnan(sparam.reference_disparity)
+    % generate RDS images
+    if strcmpi(sparam.noise_mode,'none') % generating an intact RDS stimulus
+      [imgL,imgR]=nf_RDSfastest(pos_ref{1},pos_ref{2},wdot,bdot,dotalpha,dotDens,sparam.colors(3),0,1,1);
+    elseif strcmpi(sparam.noise_mode,'anti') % generating an anticorrelated RDS stimulus
+      [imgL,imgR]=nf_RDSfastest_with_acor_noise_MEX(pos_ref{1},pos_ref{2},wdot,bdot,dotalpha,dotDens,sparam.noise_ratio,sparam.colors(3));
+    elseif strcmpi(sparam.noise_mode,'snr') % generating a Signal-to-Noise-Ratio(SNR)-modulated RDS stimulus
+      % in SNR RDS stimuli, noise dots are assigned in advance of generating the RDS.
+      obj_idx=find(rect_field_ref{stimID}~=0);
+      obj_idx=shuffle(obj_idx);
+      obj_idx=obj_idx(1:round(numel(obj_idx)*sparam.noise_ratio/100));
+      noise_field=sparam.noise_mean+randn(numel(obj_idx),1).*sparam.noise_sd;
+      noise_height=CalcDistFromDisparity(ipd,noise_field,vdist); % unit: cm
+      [noiseL,noiseR]=RayTrace_ScreenPos_X_MEX(noise_height,ipd,vdist,pix_per_cm_x,0);
+
+      posL=pos_ref{1};
+      posR=pos_ref{2};
+      if strcmpi(sparam.noise_method,'add') % if you want to add noises on the baseline depths, please use the lines below.
+        posL(obj_idx)=posL(obj_idx)+noiseL;
+        posR(obj_idx)=posR(obj_idx)+noiseR;
+      elseif strcmpi(sparam.noise_method,'replace') % if you want to replace the baseline depths with generated noises, please use the lines below.
+        posL(obj_idx)=noiseL;
+        posR(obj_idx)=noiseR;
+      else
+        error('sparam.noise_method should be one of ''add'' or ''replace''.');
+      end
+      [imgL,imgR]=nf_RDSfastest(posL,posR,wdot,bdot,dotalpha,dotDens,sparam.colors(3),0,0,1);
+    else
+      error('sparam.noise_mode should be one of ''none'', ''anti'' or ''snr''. check the stimulus file.');
+    end
+    stim_ref{1}=Screen('MakeTexture',winPtr,imgL);
+    stim_ref{2}=Screen('MakeTexture',winPtr,imgR);
+  end % if ~isnan(sparam.reference_disparity)
+
   % wait for the BetweenDuration
   tBetweenTrial=tBetweenTrial+sparam.BetweenDuration;
   while GetSecs()<tBetweenTrial, resps.check_responses(event); end
@@ -752,36 +821,50 @@ for currenttrial=1:1:numel(design)
   tStart=GetSecs();
   event=event.add_event('Start Trial',disparity);
 
-  %% stimulus ON
-
-  for nn=1:1:nScr
-    Screen('SelectStereoDrawBuffer',winPtr,nn-1);
-    Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
-    Screen('DrawTexture',winPtr,stim{nn},[],CenterRect(stimRect,winRect));
-    Screen('DrawTexture',winPtr,fcross{1,nn},[],CenterRect(fixRect,winRect));
+  % determine stimulus prsentation order
+  if ~isnan(sparam.reference_disparity) % for 2AFC, 1=target, 2=reference
+    stim_order=shuffle([1,2]);
+  else % if isnan(sparam.reference_disparity) % for 1AFC, 1=target alone
+    stim_order=1;
   end
-  Screen('DrawingFinished',winPtr);
-  Screen('Flip',winPtr,[],[],[]);
-  event=event.add_event('Stimulus ON',disparity);
 
-  % wait for stim_on_duration
-  tStart=tStart+sparam.stim_on_duration;
-  while GetSecs()<tStart, resps.check_responses(event); end
+  % presentation
+  for pp=stim_order
 
-  %% stimulus OFF
+    %% stimulus ON
+    for nn=1:1:nScr
+      Screen('SelectStereoDrawBuffer',winPtr,nn-1);
+      Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
+      if stim_order(pp)==1 % target
+        Screen('DrawTexture',winPtr,stim{nn},[],CenterRect(stimRect,winRect));
+      else % reference
+        Screen('DrawTexture',winPtr,stim_ref{nn},[],CenterRect(stimRect,winRect));
+      end
+      Screen('DrawTexture',winPtr,fcross{1,nn},[],CenterRect(fixRect,winRect));
+    end
+    Screen('DrawingFinished',winPtr);
+    Screen('Flip',winPtr,[],[],[]);
+    event=event.add_event('Stimulus ON',disparity);
 
-  for nn=1:1:nScr
-    Screen('SelectStereoDrawBuffer',winPtr,nn-1);
-    Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
-    Screen('DrawTexture',winPtr,fcross{1,nn},[],CenterRect(fixRect,winRect));
-  end
-  Screen('DrawingFinished',winPtr);
-  Screen('Flip',winPtr,[],[],[]);
-  event=event.add_event('Stimulus OFF',disparity);
+    % wait for stim_on_duration
+    tStart=tStart+sparam.stim_on_duration;
+    while GetSecs()<tStart, resps.check_responses(event); end
 
-  % wait for stim_on_duration
-  tStart=tStart+sparam.stim_off_duration;
-  while GetSecs()<tStart, resps.check_responses(event); end
+    %% stimulus OFF
+    for nn=1:1:nScr
+      Screen('SelectStereoDrawBuffer',winPtr,nn-1);
+      Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
+      Screen('DrawTexture',winPtr,fcross{1,nn},[],CenterRect(fixRect,winRect));
+    end
+    Screen('DrawingFinished',winPtr);
+    Screen('Flip',winPtr,[],[],[]);
+    event=event.add_event('Stimulus OFF',disparity);
+
+    % wait for stim_off_duration
+    tStart=tStart+sparam.stim_off_duration;
+    while GetSecs()<tStart, resps.check_responses(event); end
+
+  end % for pp=stim_order
 
   %% observer response
 
@@ -799,17 +882,43 @@ for currenttrial=1:1:numel(design)
   while ~respFlag
     [x,y,button]=GetMouse(); %#ok
     [dummy1,dummy2,keyCode]=resps.check_responses(event); %#ok
-    if button(1) || keyCode(dparam.Key1)==1
-      event=event.add_event('Response','Near');
-      respFlag=-1*sign(disparity); % if disparity<0 (near): respFlag=1 (correct), while if disparity>0 (far): respFlag=-1 (incorrect)
-    elseif button(3) || keyCode(dparam.Key2)==1
-      respmatrix(stimID)=respmatrix(stimID)+1;
-      event=event.add_event('Response','Far');
-      respFlag=sign(disparity); % if disparity>0 (far): respFlag=1 (correct), while if disparity<0 (near): respFlag=-1 (incorrect)
-    else
-      respFlag=0;
+    if ~isnan(sparam.reference_disparity)
+      disparity_comp=disparity-sparam.reference_disparity;
+      if stim_order(1)==2 % reference is presented first
+        if button(1) || keyCode(dparam.Key1)==1 % reference is nearer
+          respmatrix(stimID)=respmatrix(stimID)+1;
+          event=event.add_event('Response','First');
+          respFlag=sign(disparity_comp); % if disparity_comp>0 (reference is nearer): respFlag=1 (correct), while if disparity_comp<0: respFlag=-1 (incorrect)
+        elseif button(3) || keyCode(dparam.Key2)==1
+          event=event.add_event('Response','Second');
+          respFlag=-1*sign(disparity_comp); % if disparity_comp>0 (reference is farther): respFlag=1 (correct), while if disparity_comp<0 (near): respFlag=-1 (incorrect)
+        else
+          respFlag=0;
+        end
+      else % if stim_order(1)==1 % target is presented first
+        if button(1) || keyCode(dparam.Key1)==1 % reference is farther
+          event=event.add_event('Response','First');
+          respFlag=-1*sign(disparity_comp); % if disparity_comp<0 (target is nearer): respFlag=1 (correct), while if disparity_comp>0: respFlag=-1 (incorrect)
+        elseif button(3) || keyCode(dparam.Key2)==1
+          respmatrix(stimID)=respmatrix(stimID)+1;
+          event=event.add_event('Response','Second');
+          respFlag=sign(disparity_comp); % if disparity_comp>0 (target is farther): respFlag=1 (correct), while if disparity_comp<0: respFlag=-1 (incorrect)
+        else
+          respFlag=0;
+        end
+      end
+    else % if isnan(sparam.reference_disparity)
+      if button(1) || keyCode(dparam.Key1)==1
+        event=event.add_event('Response','Near');
+        respFlag=-1*sign(disparity); % if disparity<0 (near): respFlag=1 (correct), while if disparity>0 (far): respFlag=-1 (incorrect)
+      elseif button(3) || keyCode(dparam.Key2)==1
+        respmatrix(stimID)=respmatrix(stimID)+1;
+        event=event.add_event('Response','Far');
+        respFlag=sign(disparity); % if disparity>0 (far): respFlag=1 (correct), while if disparity<0 (near): respFlag=-1 (incorrect)
+      else
+        respFlag=0;
+      end
     end
-    resps.check_responses(event);
   end
 
   % giving a correct/incorrect feedback
@@ -848,6 +957,7 @@ for currenttrial=1:1:numel(design)
 
   % garbage collections, clean up the current texture & release memory
   for ii=1:1:2, Screen('Close',stim{ii}); end
+  if ~isnan(sparam.reference_disparity), for ii=1:1:2, Screen('Close',stim_ref{ii}); end, end
   event=event.add_event('End Trial',disparity);
 
 end % for currenttrial=1:1:numel(design)
@@ -872,7 +982,7 @@ disp(' ');
 fprintf('saving data...');
 
 % save data
-savefname=fullfile(resultDir,[num2str(subjID),'_near_far_rectangle_results_run_',num2str(acq,'%02d'),'.mat']);
+savefname=fullfile(resultDir,[num2str(subjID),'_stereo_screening_results_run_',num2str(acq,'%02d'),'.mat']);
 eval(sprintf('save -append %s subjID acq sparam dparam design event gamma_table respmatrix;',savefname));
 disp('done.');
 
@@ -929,6 +1039,9 @@ threshold=getThres(inference,2);
 
 plot([min(disparities)-0.5,max(disparities)+0.5],[0.5,0.5],'b:','LineWidth',1);
 plot([threshold,threshold],[0,1],'k:','LineWidth',2);
+if ~isnan(sparam.reference_disparity) % plot reference disparity
+  plot([sparam.reference_disparity,sparam.reference_disparity],[0,1],'b:','LineWidth',3);
+end
 
 % decolate figure
 set(gca,'Color',[0.95,0.95,1.0]);
@@ -963,10 +1076,6 @@ rmpath(genpath(fullfile(rootDir,'..','Common')));
 rmpath(fullfile(rootDir,'..','Generation'));
 rmpath(fullfile(rootDir,'..','mpsignifit'));
 %setenv('PATH',strrep(getenv('PATH'),[';',fullfile(rootDir,'..','mpsignifit')],''));
-clear global;
-clear mex;
-%clear all;
-%close all;
 diary off;
 
 
@@ -978,7 +1087,7 @@ catch
   % this "catch" section executes in case of an error in the "try" section
   % above.  Importantly, it closes the onscreen window if its open.
   Screen('CloseAll');
-  ShowCursor;
+  ShowCursor();
   Priority(0);
   GammaResetPTB(1.0);
   tmp=lasterror; %#ok
@@ -992,10 +1101,6 @@ catch
   rmpath(genpath(fullfile(rootDir,'..','Common')));
   rmpath(fullfile(rootDir,'..','Generation'));
   %psychrethrow(psychlasterror);
-  clear global;
-  clear mex;
-  %clear all;
-  %close all;
   return
 end % try..catch
 
