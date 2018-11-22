@@ -117,6 +117,9 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % %% the resolution of the screen width
 % dparam.ScrWidth=1920;
 %
+% % whther skipping the PTB's vertical-sync signal test. if 1, the sync test is skipped
+% dparam.skip_sync_test=0;
+%
 %
 % [About stimulusfile]
 % The contents of the stimulusfile is as below.
@@ -343,7 +346,8 @@ dparam=ValidateStructureFields(dparam,... % validate fields and set the default 
          'givefeedback',1,...
          'fullscr',false,...
          'ScrHeight',1200,...
-         'ScrWidth',1920);
+         'ScrWidth',1920,...
+         'skip_sync_test',0);
 
 % organize sparam
 sparam=struct(); % initialize
@@ -485,7 +489,7 @@ end
 %%%% Initialization of Left & Right screens for binocular presenting/viewing mode
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%Screen('Preference', 'SkipSyncTests', 1);
+if dparam.skip_sync_test, Screen('Preference','SkipSyncTests',1); end
 
 % open the Screen(s)
 [winPtr,winRect,nScr,dparam.fps,dparam.ifi,initDisplay_OK]=InitializePTBDisplays(dparam.ExpMode,sparam.bgcolor,0,[],dparam.scrID);

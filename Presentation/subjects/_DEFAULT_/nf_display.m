@@ -38,3 +38,6 @@ dparam.ScrHeight=1440;
 
 %% the resolution of the screen width
 dparam.ScrWidth=2560;
+
+% whther skipping the PTB's vertical-sync signal test. if 1, the sync test is skipped
+dparam.skip_sync_test=0;
