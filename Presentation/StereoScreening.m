@@ -409,41 +409,38 @@ end
 %%%% Displaying the presentation parameters you set
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-disp('The Presentation Parameters are as below.');
-fprintf('\n');
-disp('************************************************');
-eval(sprintf('disp(''Date and time          : %s %s'');',datestr(now,'yyyy-mm-dd(DDD) HH:MM:SS'),getusername()));
-disp('****** Script, Subject, Acquistion Number ******');
-eval(sprintf('disp(''Running Script Name    : %s'');',mfilename()));
-eval(sprintf('disp(''Subject ID             : %s'');',subjID));
-eval(sprintf('disp(''Acquisition Number     : %d'');',acq));
-disp('********* Run Type, Display Image Type *********');
-eval(sprintf('disp(''Display Mode           : %s'');',dparam.ExpMode));
-eval(sprintf('disp(''use Full Screen Mode   : %d'');',logical(dparam.fullscr)));
-eval(sprintf('disp(''Start Method           : %d'');',dparam.start_method));
+fprintf('The Presentation Parameters are as below.\n\n');
+fprintf('************************************************\n');
+fprintf('Date and time          : %s %s\n',datestr(now,'yyyy-mm-dd(DDD) HH:MM:SS'),getusername());
+fprintf('****** Script, Subject, Acquistion Number ******\n');
+fprintf('Running Script Name    : %s\n',mfilename());
+fprintf('Subject ID             : %s\n',subjID);
+fprintf('Acquisition Number     : %d\n',acq);
+fprintf('********* Run Type, Display Image Type *********\n');
+fprintf('Display Mode           : %s\n',dparam.ExpMode);
+fprintf('use Full Screen Mode   : %d\n',logical(dparam.fullscr));
+fprintf('Start Method           : %d\n',dparam.start_method);
 if dparam.start_method==4
-  eval(sprintf('disp(''Custom Trigger         : %s'');',dparam.custom_trigger));
+  fprintf('Custom Trigger         : %s\n',dparam.custom_trigger);
 end
-disp('*************** Screen Settings ****************');
-eval(sprintf('disp(''Screen Height          : %d'');',dparam.ScrHeight));
-eval(sprintf('disp(''Screen Width           : %d'');',dparam.ScrWidth));
-disp('*********** Stimulation Periods etc. ***********');
-eval(sprintf('disp(''Fixation Time(sec)     : %.2f'');',sparam.initial_fixation_time));
-eval(sprintf('disp(''Cond Duration(sec)     : %.2f'');',sparam.condition_duration));
-eval(sprintf('disp(''Between Trial Dur(sec) : %.2f'');',sparam.BetweenDuration));
-eval(sprintf('disp(''Stim ON Duration(sec)  : %.2f'');',sparam.stim_on_duration));
-eval(sprintf('disp(''Stim OFF Duration(sec) : %.2f'');',sparam.stim_off_duration));
-disp('*** The number of cond, block, trials, imgs ****');
-eval(sprintf('disp(''#trials in each cond   : %d'');',sparam.numTrials));
-eval(sprintf('disp(''#conditions            : %d'');',sparam.numConds));
-eval(sprintf('disp(''Noise mode             : %s'');',sparam.noise_mode));
-disp('************ Response key settings *************');
-eval(sprintf('disp(''Reponse Key #1         : %d=%s'');',dparam.Key1,KbName(dparam.Key1)));
-eval(sprintf('disp(''Reponse Key #2         : %d=%s'');',dparam.Key2,KbName(dparam.Key2)));
-disp('************************************************');
-fprintf('\n');
-disp('Please carefully check before proceeding.');
-fprintf('\n');
+fprintf('*************** Screen Settings ****************\n');
+fprintf('Screen Height          : %d\n',dparam.ScrHeight);
+fprintf('Screen Width           : %d\n',dparam.ScrWidth);
+fprintf('*********** Stimulation Periods etc. ***********\n');
+fprintf('Fixation Time(sec)     : %.2f\n',sparam.initial_fixation_time);
+fprintf('Cond Duration(sec)     : %.2f\n',sparam.condition_duration);
+fprintf('Between Trial Dur(sec) : %.2f\n',sparam.BetweenDuration);
+fprintf('Stim ON Duration(sec)  : %.2f\n',sparam.stim_on_duration);
+fprintf('Stim OFF Duration(sec) : %.2f\n',sparam.stim_off_duration);
+fprintf('*** The number of cond, block, trials, imgs ****\n');
+fprintf('#trials in each cond   : %d\n',sparam.numTrials);
+fprintf('#conditions            : %d\n',sparam.numConds);
+fprintf('Noise mode             : %s\n',sparam.noise_mode);
+fprintf('************ Response key settings *************\n');
+fprintf('Reponse Key #1         : %d=%s\n',dparam.Key1,KbName(dparam.Key1));
+fprintf('Reponse Key #2         : %d=%s\n',dparam.Key2,KbName(dparam.Key2));
+fprintf('************************************************\n\n');
+fprintf('Please carefully check before proceeding.\n\n');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
