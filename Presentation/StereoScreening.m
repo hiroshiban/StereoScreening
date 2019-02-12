@@ -145,7 +145,7 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % sparam.base_disparity=0;         % target base disparity in deg (if non-zero, the target plane is located to near/far side compared to the fixation plane)
 % sparam.disparity=[8,  4,  2,  1, 0.5, -0.5, -1, -2, -4, -8]; % target disparities in arcmin
 %
-% % when sparam.reference_disparity is NaN, the task is 1AFC in which participants have tojudge whether the target
+% % when sparam.reference_disparity is NaN, the task is 1AFC in which participants have to judge whether the target
 % % is located to near or far, while, when this value is set to a specific disparity (arcmins), the task becomes 2AFC
 % % in which particpants have to judge which of the planes (the first or the second) is located to near.
 % sparam.reference_disparity=NaN;
@@ -1155,7 +1155,7 @@ end % for currenttrial=1:1:numel(design)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 experimentDuration=GetSecs()-the_experiment_start;
-event=event.add_event('End',[],the_experiment_start);
+event=event.add_event('End',[]);
 disp(' ');
 disp(['Experiment Duration was: ', num2str(experimentDuration)]);
 disp(' ');
@@ -1230,7 +1230,7 @@ if ~isnan(sparam.reference_disparity) % plot reference disparity
   plot([sparam.reference_disparity,sparam.reference_disparity],[0,1],'b:','LineWidth',3);
 end
 
-% decolate figure
+% decorate figure
 set(gca,'Color',[0.95,0.95,1.0]);
 set(gca,'XLim',[min(disparities)-0.5,max(disparities)+0.5]);
 set(gca,'XTick',disparities);

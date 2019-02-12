@@ -16,7 +16,7 @@ sparam.gapRectFieldSize=[0,0];     % widths [row(top and bottom),col(right and l
 sparam.base_disparity=0;           % target base disparity in deg (if non-zero, the target plane is located to near/far side compared to the fixation plane)
 sparam.disparity=[-8, -4, -2, -1, -0.5, 0.5, 1, 2, 4, 8]; % target disparities in arcmin
 
-% when sparam.reference_disparity is NaN, the task is 1AFC in which participants have tojudge whether the target
+% when sparam.reference_disparity is NaN, the task is 1AFC in which participants have to judge whether the target
 % is located to near or far, while, when this value is set to a specific disparity (arcmins), the task becomes 2AFC
 % in which particpants have to judge which of the planes (the first or the second) is located to near.
 sparam.reference_disparity=NaN;
