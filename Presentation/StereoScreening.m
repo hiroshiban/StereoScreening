@@ -577,7 +577,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Debug codes
-%%%% just to save each images as *.png format files.
+%%%% saving the stimulus images as *.png format files and enter the debug (keyboard) mode
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % %%%%%% DEBUG codes start here. The codes below are just to get stimulus images and check the dparam and sparam parameters
@@ -659,7 +659,7 @@ if strfind(upper(subjID),'DEBUG')
   end
 
   % save stimuli as *.mat
-  save_dir=fullfile(pwd,'images');
+  save_dir=fullfile(resultDir,'images');
   if ~exist(save_dir,'dir'), mkdir(save_dir); end
   save(fullfile(save_dir,'stereo_screening_stimuli.mat'),'design','dparam','sparam','imgL','imgR','posL','posR','wdot','bdot','dotalpha');
   if ~isnan(sparam.reference_disparity)
@@ -671,29 +671,17 @@ if strfind(upper(subjID),'DEBUG')
     % save generated figures as png
     if ~strcmpi(dparam.ExpMode,'redgreen') && ~strcmpi(dparam.ExpMode,'redblue')
       M = [imgL{ii},sparam.bgcolor(3)*ones(size(imgL{ii},1),20),imgR{ii},sparam.bgcolor(3)*ones(size(imgL{ii},1),20),imgL{ii}];
-      % im_h = imagesc(M,[0 255]);
-      % axis off
-      % % truesize is necessary to avoid automatic scaling
-      % size_one2one(im_h);
-      % colormap(gray);
-      % shg;
     else
       M=reshape([imgL{ii},imgR{ii},sparam.bgcolor(3)*ones(size(imgL{ii}))],[size(imgL{ii}),3]); % RGB;
-      % im_h = imagesc(M);
-      % axis off
-      % % truesize is necessary to avoid automatic scaling
-      % size_one2one(im_h);
-      % shg;
     end
 
     figure; hold on;
-    imfig=imshow(M,[0,255]); %#ok
+    imshow(M,[0,255]); %#ok
     if ~strcmpi(dparam.ExpMode,'redgreen') && ~strcmpi(dparam.ExpMode,'redblue')
       fname=sprintf('stereo_screening_cond_%03d.png',ii);
     else
       fname=sprintf('stereo_screening_red_green_cond_%03d.png',ii);
     end
-    %saveas(imfig,[save_dir,filesep(),fname,'.png'],'png');
     imwrite(M,[save_dir,filesep(),fname,'.png'],'png');
   end % for ii=1:1:sparam.numConds
 
@@ -702,29 +690,17 @@ if strfind(upper(subjID),'DEBUG')
     % save generated figures as png
     if ~strcmpi(dparam.ExpMode,'redgreen') && ~strcmpi(dparam.ExpMode,'redblue')
       M = [imgL_ref,sparam.bgcolor(3)*ones(size(imgL_ref,1),20),imgR_ref,sparam.bgcolor(3)*ones(size(imgL_ref,1),20),imgL_ref];
-      % im_h = imagesc(M,[0 255]);
-      % axis off
-      % % truesize is necessary to avoid automatic scaling
-      % size_one2one(im_h);
-      % colormap(gray);
-      % shg;
     else
       M=reshape([imgL_ref,imgR_ref,sparam.bgcolor(3)*ones(size(imgL_ref))],[size(imgL_ref),3]); % RGB;
-      % im_h = imagesc(M);
-      % axis off
-      % % truesize is necessary to avoid automatic scaling
-      % size_one2one(im_h);
-      % shg;
     end
 
     figure; hold on;
-    imfig=imshow(M,[0,255]); %#ok
+    imshow(M,[0,255]); %#ok
     if ~strcmpi(dparam.ExpMode,'redgreen') && ~strcmpi(dparam.ExpMode,'redblue')
       fname='stereo_screening_reference.png';
     else
       fname='stereo_screening_red_green_reference.png';
     end
-    %saveas(imfig,[save_dir,filesep(),fname,'.png'],'png');
     imwrite(M,[save_dir,filesep(),fname,'.png'],'png');
   end % if ~isnan(sparam.reference_disparity)
 
@@ -864,7 +840,7 @@ Screen('Flip', winPtr,[],[],[]);
 
 % add time stamp (this also works to load add_event method in memory in advance of the actual displays)
 fprintf('\nWaiting for the start...\n');
-event=event.add_event('Experiment Start',strcat([datestr(now,'yymmdd'),' ',datestr(now,'HH:mm:ss')]),[]);
+event=event.add_event('Experiment Start',strcat([datestr(now,'yymmdd'),' ',datestr(now,'HH:mm:ss')]),NaN);
 
 % waiting for stimulus presentation
 resps.wait_stimulus_presentation(dparam.start_method,dparam.custom_trigger);
@@ -1274,7 +1250,7 @@ diary off;
 %%%% Catch the errors
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-catch
+catch %#ok
   % this "catch" section executes in case of an error in the "try" section
   % above.  Importantly, it closes the onscreen window if its open.
   Screen('CloseAll');
@@ -1292,7 +1268,6 @@ catch
   rmpath(genpath(fullfile(rootDir,'..','Common')));
   rmpath(fullfile(rootDir,'..','Generation'));
   rmpath(fullfile(rootDir,'..','mpsignifit'));
-  %psychrethrow(psychlasterror);
   return
 end % try..catch
 
