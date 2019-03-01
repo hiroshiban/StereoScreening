@@ -19,7 +19,7 @@ function OK=run_exp(subj,acq_ids)
 % OK      : whether this script is completed without any error [true/false]
 %
 % Created    : "2010-06-25 08:37:58 ban"
-% Last Update: "2018-11-19 15:33:23 ban"
+% Last Update: "2019-03-01 15:15:19 ban"
 
 % constants, you can change these for your own purpose.
 stim_fname='nf_stimulus';
@@ -48,7 +48,7 @@ end
 % if the subj directory is not found, create subj directory, copy all condition
 % files from DEFAULT and then run the script using DEFAULT parameters
 
-subj_dir=fullfile(pwd,'subjects',subj);
+subj_dir=fullfile(fileparts(mfilename('fullpath')),'subjects',subj);
 if ~exist(subj_dir,'dir')
 
   disp('The subject directory was not found.');
@@ -69,7 +69,7 @@ if ~exist(subj_dir,'dir')
   end
 
   %mkdir(subj_dir);
-  copyfile(fullfile(pwd,'subjects','_DEFAULT_'),subj_dir);
+  copyfile(fullfile(fileparts(mfilename('fullpath')),'subjects','_DEFAULT_'),subj_dir);
 end
 
 
