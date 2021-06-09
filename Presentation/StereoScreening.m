@@ -808,7 +808,7 @@ end
 
 % save the current parameters
 eval(sprintf('save %s subjID acq design sparam dparam gamma_table;',savefname));
-disp('done.');
+fprintf('done.\n');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1133,9 +1133,8 @@ end % for currenttrial=1:1:numel(design)
 
 experimentDuration=GetSecs()-the_experiment_start;
 event=event.add_event('End',[]);
-disp(' ');
-disp(['Experiment Duration was: ', num2str(experimentDuration)]);
-disp(' ');
+
+fprintf(['\nExperiment Duration was: ', num2str(experimentDuration),' secs\n\n']);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1148,7 +1147,7 @@ fprintf('saving data...');
 % save data
 savefname=fullfile(resultDir,[num2str(subjID),'_stereo_screening_results_run_',num2str(acq,'%02d'),'.mat']);
 eval(sprintf('save -append %s subjID acq sparam dparam design event gamma_table respmatrix;',savefname));
-disp('done.');
+fprintf('done.\n');
 
 % tell the experimenter that the measurements are completed
 try

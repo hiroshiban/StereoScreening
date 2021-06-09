@@ -22,7 +22,7 @@ sparam.disparity=[-8, -4, -2, -1, -0.5, 0.5, 1, 2, 4, 8]; % target disparities i
 sparam.reference_disparity=NaN;
 
 %%% the number of trials for each stimulus condition
-sparam.numTrials=20;
+sparam.numTrials=15;
 
 %%% RDS parameters
 sparam.dotRadius=[0.05,0.05]; % radius of RDS's white/black ovals
