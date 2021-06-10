@@ -9,14 +9,23 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % This is a full update of the old NearFarRectangleBehavior.m so as to be compatible with the new PTB3 toolbox
 % (especially new PsychImaging functions) and new 3D viewing setup with an nVidia graphics card and 3D vision tools.
 %
-% You can only run this script on Windows OS due to the current psignifit tool compatibility implemented in
-% this script. Before running the test, please add a path to the psignifit executables to you 'PATH'
-% environmental variable (or you can uncomment setenv() descriptions to set the environmental variable
-% from this script).
+% Currently, you can run this script only on Windows OS since the psignifit tool (expecially executables) linked
+% from this script is only compatible with Windows. Before running the test, please add a path to the
+% psignifit executables (psignifit-bootstrap.exe, psignifit-diagnostics.exe, and psignifit-mapestimate.exe)
+% to you 'PATH' environmental variable (or you can uncomment setenv() descriptions to set the environmental
+% variable from this script).
 %
 %
 % [input variables]
 % sujID         : ID of subject, string, such as 's01'
+%                 the directory named as subj_name (e.g. 'HB') should be located in ~/StereoScreening/Presentation/subjects/
+%                 under which configurations files are included. By changing parameters in the configuration files,
+%                 stimulus type, size, colors, moving speed, presentation timing etc can be manipulated as you like.
+%                 For details, please see the files in ~/StereoScreening/Presentation/subjects/_DEFAULT_.
+%                 If subject directory does not exist in the specific directory described above, the parameters in the
+%                 _DEFAULT_ directory would be automatically copied as subj_name and the default parameters are used for
+%                 stimulus presentation. you can modify the default parameters later once the files are copied and the
+%                 script is terminated.
 %                 !!!!!!!!!!!!!!!!!! IMPORTANT NOTE !!!!!!!!!!!!!!!!!!!!!!!!
 %                 !!! if 'debug' (case insensitive) is included          !!!
 %                 !!! in subjID string, this program runs as DEBUG mode; !!!
@@ -83,8 +92,8 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % Programmed_by_Hiroshi_Ban___Aug_24_2015
 % ************************************************************
 %
-% % display mode, one of "mono", "dual", "dualparallel", "dualcross", "cross", "parallel", "redgreen", "greenred",
-% % "redblue", "bluered", "shutter", "topbottom", "bottomtop", "interleavedline", "interleavedcolumn"
+% % display mode, one of "mono", "dual", "dualcross", "dualparallel", "cross", "parallel", "redgreen", "greenred",
+% % "redblue", "bluered", "shutter", "topbottom", "bottomtop", "interleavedline", "interleavedcolumn", "propixxmono", "propixxstereo"
 % dparam.ExpMode='shutter';%'cross';
 %
 % dparam.scrID=1; % screen ID, generally 0 for a single display setup, 1 for dual display setup
@@ -763,6 +772,24 @@ fcross{4,2}=Screen('MakeTexture',winPtr,incorrect_fix_R);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Prepare blue lines for stereo image flip sync with VPixx PROPixx
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% There seems to be a blueline generation bug on some OpenGL systems.
+% SetStereoBlueLineSyncParameters(winPtr, winRect(4)) corrects the
+% bug on some systems, but breaks on other systems.
+% We'll just disable automatic blueline, and manually draw our own bluelines!
+
+if strcmpi(dparam.ExpMode,'propixxstereo')
+  SetStereoBlueLineSyncParameters(winPtr, winRect(4)+10);
+  blueRectOn(1,:)=[0, winRect(4)-1, winRect(3)/4, winRect(4)];
+  blueRectOn(2,:)=[0, winRect(4)-1, winRect(3)*3/4, winRect(4)];
+  blueRectOff(1,:)=[winRect(3)/4, winRect(4)-1, winRect(3), winRect(4)];
+  blueRectOff(2,:)=[winRect(3)*3/4, winRect(4)-1, winRect(3), winRect(4)];
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% image size adjusting to match the current display resolutions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -830,6 +857,12 @@ for nn=1:1:nScr
   Screen('SelectStereoDrawBuffer',winPtr,nn-1);
   Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
   Screen('DrawTexture',winPtr,fcross{2,nn},[],CenterRect(fixRect,winRect));
+
+  % blue line for stereo sync
+  if strcmpi(dparam.ExpMode,'propixxstereo')
+    Screen('FillRect',winPtr,[0,0,255],blueRectOn(nn,:));
+    Screen('FillRect',winPtr,[0,0,0],blueRectOff(nn,:));
+  end
 end
 Screen('DrawingFinished',winPtr);
 Screen('Flip', winPtr,[],[],[]);
@@ -870,6 +903,12 @@ if sparam.initial_fixation_time~=0
     Screen('SelectStereoDrawBuffer',winPtr,nn-1);
     Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
     Screen('DrawTexture',winPtr,fcross{1,nn},[],CenterRect(fixRect,winRect));
+
+    % blue line for stereo sync
+    if strcmpi(dparam.ExpMode,'propixxstereo')
+      Screen('FillRect',winPtr,[0,0,255],blueRectOn(nn,:));
+      Screen('FillRect',winPtr,[0,0,0],blueRectOff(nn,:));
+    end
   end
   Screen('DrawingFinished',winPtr);
   Screen('Flip',winPtr,[],[],[]);
@@ -999,6 +1038,12 @@ for currenttrial=1:1:numel(design)
         Screen('DrawTexture',winPtr,stim_ref{nn},[],CenterRect(stimRect,winRect));
       end
       Screen('DrawTexture',winPtr,fcross{1,nn},[],CenterRect(fixRect,winRect));
+
+      % blue line for stereo sync
+      if strcmpi(dparam.ExpMode,'propixxstereo')
+        Screen('FillRect',winPtr,[0,0,255],blueRectOn(nn,:));
+        Screen('FillRect',winPtr,[0,0,0],blueRectOff(nn,:));
+      end
     end
     Screen('DrawingFinished',winPtr);
     Screen('Flip',winPtr,[],[],[]);
@@ -1013,6 +1058,12 @@ for currenttrial=1:1:numel(design)
       Screen('SelectStereoDrawBuffer',winPtr,nn-1);
       Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
       Screen('DrawTexture',winPtr,fcross{1,nn},[],CenterRect(fixRect,winRect));
+
+      % blue line for stereo sync
+      if strcmpi(dparam.ExpMode,'propixxstereo')
+        Screen('FillRect',winPtr,[0,0,255],blueRectOn(nn,:));
+        Screen('FillRect',winPtr,[0,0,0],blueRectOff(nn,:));
+      end
     end
     Screen('DrawingFinished',winPtr);
     Screen('Flip',winPtr,[],[],[]);
@@ -1031,6 +1082,12 @@ for currenttrial=1:1:numel(design)
     Screen('SelectStereoDrawBuffer',winPtr,nn-1);
     Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
     Screen('DrawTexture',winPtr,fcross{2,nn},[],CenterRect(fixRect,winRect));
+
+    % blue line for stereo sync
+    if strcmpi(dparam.ExpMode,'propixxstereo')
+      Screen('FillRect',winPtr,[0,0,255],blueRectOn(nn,:));
+      Screen('FillRect',winPtr,[0,0,0],blueRectOff(nn,:));
+    end
   end
   Screen('DrawingFinished',winPtr);
   Screen('Flip',winPtr,[],[],[]);
@@ -1100,6 +1157,12 @@ for currenttrial=1:1:numel(design)
       else % if respFlag==-1 or 0 % incorrect response
         Screen('DrawTexture',winPtr,fcross{4,nn},[],CenterRect(fixRect,winRect));
       end
+
+      % blue line for stereo sync
+      if strcmpi(dparam.ExpMode,'propixxstereo')
+        Screen('FillRect',winPtr,[0,0,255],blueRectOn(nn,:));
+        Screen('FillRect',winPtr,[0,0,0],blueRectOff(nn,:));
+      end
     end
     Screen('DrawingFinished',winPtr);
     Screen('Flip',winPtr,[],[],[]);
@@ -1115,6 +1178,12 @@ for currenttrial=1:1:numel(design)
     Screen('SelectStereoDrawBuffer',winPtr,nn-1);
     Screen('DrawTexture',winPtr,background,[],CenterRect(bgRect,winRect));
     Screen('DrawTexture',winPtr,fcross{1,nn},[],CenterRect(fixRect,winRect));
+
+    % blue line for stereo sync
+    if strcmpi(dparam.ExpMode,'propixxstereo')
+      Screen('FillRect',winPtr,[0,0,255],blueRectOn(nn,:));
+      Screen('FillRect',winPtr,[0,0,0],blueRectOff(nn,:));
+    end
   end
   Screen('DrawingFinished',winPtr);
   Screen('Flip',winPtr,[],[],[]);
@@ -1236,6 +1305,16 @@ pause(0.5);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Screen('CloseAll');
+
+% closing datapixx
+if strcmpi(dparam.ExpMode,'propixxmono') || strcmpi(dparam.ExpMode,'propixxstereo')
+  if Datapixx('IsViewpixx3D')
+    Datapixx('DisableVideoLcd3D60Hz');
+    Datapixx('RegWr');
+  end
+  Datapixx('Close');
+end
+
 ShowCursor();
 Priority(0);
 GammaResetPTB(1.0);
@@ -1255,6 +1334,19 @@ catch %#ok
   % this "catch" section executes in case of an error in the "try" section
   % above.  Importantly, it closes the onscreen window if its open.
   Screen('CloseAll');
+
+  if exist('dparam','var')
+    if isstructmember(dparam,'ExpMode')
+      if strcmpi(dparam.ExpMode,'propixxmono') || strcmpi(dparam.ExpMode,'propixxstereo')
+        if Datapixx('IsViewpixx3D')
+          Datapixx('DisableVideoLcd3D60Hz');
+          Datapixx('RegWr');
+        end
+        Datapixx('Close');
+      end
+    end
+  end
+
   ShowCursor();
   Priority(0);
   GammaResetPTB(1.0);
