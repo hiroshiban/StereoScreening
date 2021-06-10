@@ -10,10 +10,12 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % (especially new PsychImaging functions) and new 3D viewing setup with an nVidia graphics card and 3D vision tools.
 %
 % Currently, you can run this script only on Windows OS since the psignifit tool (expecially executables) linked
-% from this script is only compatible with Windows. Before running the test, please add a path to the
-% psignifit executables (psignifit-bootstrap.exe, psignifit-diagnostics.exe, and psignifit-mapestimate.exe)
-% to you 'PATH' environmental variable (or you can uncomment setenv() descriptions to set the environmental
-% variable from this script).
+% from this script is only compatible with Windows. Before running the test, please configure the psignifit executables
+% so that they can be called from the system, following one of the procedures below.
+% 1. please add a path to the psignifit executables (psignifit-bootstrap.exe, psignifit-diagnostics.exe, and psignifit-mapestimate.exe)
+%    to you 'PATH' environmental variable.
+% 2. Or you can uncomment setenv() descriptions to set the environmental variable from this script.
+% 3. Or please copy the psignifit executables to your system path such as C:\Windows\System32.
 %
 %
 % [input variables]
