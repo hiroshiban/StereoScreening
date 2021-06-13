@@ -17,6 +17,17 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % 2. Or you can uncomment setenv() descriptions to set the environmental variable from this script.
 % 3. Or please copy the psignifit executables to your system path such as C:\Windows\System32.
 %
+% Created    : "Tue Aug 17 12:25:39 2010 ban"
+% Last Update: "2021-06-13 15:46:46 ban"
+%
+%
+% [acknowledgment]
+% This screening uses Psignifit (mpsignifit) tool develped by Ingo Frund, Valentin Hanel and Felix Wichmann,
+% in computing the subject discrimination threshold and psychmetric functions. 
+% https://github.com/wichmann-lab/psignifit/wiki
+% https://github.com/wichmann-lab/psignifit/archive/master.zip
+% We would like to express our sincere gratitudes to the authors for sharing the great tool.
+%
 %
 % [input variables]
 % sujID         : ID of subject, string, such as 's01'
@@ -242,10 +253,6 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 %
 % [reference]
 % for stmulus generation, see ../Generation & ../Common directories.
-%
-%
-% Programmed : "Tue Aug 17 12:25:39 2010 ban"
-% Last Update: "2018-02-17 17:08:43 ban"
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
