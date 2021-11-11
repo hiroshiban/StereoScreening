@@ -2,7 +2,7 @@
 # **README on StereoScreening**
 
 <div>Created    : "2010-08-17 12:25:39 ban"</div>
-<div>Last Update: "2021-11-11 20:58:51 ban"
+<div>Last Update: "2021-11-12 02:59:42 ban"
 
 ***
 
@@ -325,7 +325,7 @@ We would like to express our sincere gratitudes to the authors for sharing these
 
 # <a name = "License"> **License** </a>
 
-StereoScreening --- MATLAB software package for stereo vision screening; a simple test for testing psychophysical depth discrimination acuity based on binocular disparity. Copyright (c) 2021, Hiroshi Ban. All rights reserved.
+StereoScreening --- A MATLAB software package for stereo vision screening; a simple test for estimating psychophysical depth discrimination performance based on binocular disparity. Copyright (c) 2021, Hiroshi Ban. All rights reserved.  
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
