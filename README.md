@@ -8,7 +8,7 @@
 
 # <a name = "Menu"> **Menu** </a>
 
-- [Introduction – what is StereScreening ?](#Introduction)
+- [Introduction – what is StereoScreening ?](#Introduction)
 - [System requirements](#System)
 - [How to run StereoScreening](#Launch)
   - [Detailed descriptions of the StereoScreening](#Details)
@@ -21,7 +21,7 @@
 
 ***
 
-# <a name = "Introduction"> **Introduction – what is StereScreening ?** </a>
+# <a name = "Introduction"> **Introduction – what is StereoScreening ?** </a>
 
 ![StereoScreening](doc/imgs/00_StereoScreening.png)  
 
