@@ -18,12 +18,12 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % 3. Or please copy the psignifit executables to your system path such as C:\Windows\System32.
 %
 % Created    : "Tue Aug 17 12:25:39 2010 ban"
-% Last Update: "2021-06-13 15:46:46 ban"
+% Last Update: "2021-06-18 16:14:09 ban"
 %
 %
 % [acknowledgment]
 % This screening uses Psignifit (mpsignifit) tool develped by Ingo Frund, Valentin Hanel and Felix Wichmann,
-% in computing the subject discrimination threshold and psychmetric functions. 
+% in computing the subject discrimination threshold and psychmetric functions.
 % https://github.com/wichmann-lab/psignifit/wiki
 % https://github.com/wichmann-lab/psignifit/archive/master.zip
 % We would like to express our sincere gratitudes to the authors for sharing the great tool.
