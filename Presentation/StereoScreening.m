@@ -18,7 +18,7 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % 3. Or please copy the psignifit executables to your system path such as C:\Windows\System32.
 %
 % Created    : "Tue Aug 17 12:25:39 2010 ban"
-% Last Update: "2021-11-11 20:31:24 ban"
+% Last Update: "2021-11-12 03:26:19 ban"
 %
 %
 % [acknowledgment]
@@ -167,8 +167,8 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % sparam.base_disparity=0;         % target base disparity in deg (if non-zero, the target plane is located to near/far side compared to the fixation plane)
 % sparam.disparity=[8,  4,  2,  1, 0.5, -0.5, -1, -2, -4, -8]; % target disparities in arcmin
 %
-% % when sparam.reference_disparity is NaN, the task is 1AFC in which participants have to judge whether the target
-% % is located to near or far, while, when this value is set to a specific disparity (arcmins), the task becomes 2AFC
+% % when sparam.reference_disparity is NaN, the task is A-or-B-task in which participants have to judge whether the target
+% % is located to near or far, while, when this value is set to a specific disparity (arcmins), the task becomes 2AFC(IFC)
 % % in which particpants have to judge which of the planes (the first or the second) is located to near.
 % sparam.reference_disparity=NaN;
 %
@@ -231,7 +231,7 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % The stimuli are presented as below,
 %
 % ***************************************************
-% *** 1 AFC (when sparam.reference_disparity=NaN) ***
+% *** A-or-B task (when sparam.reference_disparity=NaN) ***
 % ***************************************************
 %
 % stim -- blank -- response -- stim -- blank -- response -- stim -- blank -- reseponse ...
@@ -241,7 +241,7 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % - press key 2 or right-mouse-click when the stimulus is to far.
 %
 % ***************************************************
-% *** 2 AFC (when sparam.reference_disparity is set as to be a real value (reference arcmin)) ***
+% *** 2 AFC(IFC) (when sparam.reference_disparity is set as to be a real value (reference arcmin)) ***
 % ***************************************************
 %
 % stim(or ref) - blank - stim(or ref) - blank - response - stim(or ref) -blank -- stim(or ref) -- blank -- response ...
