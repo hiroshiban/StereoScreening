@@ -19,7 +19,7 @@ function OK=run_exp(subj,acq_ids)
 % OK      : whether this script is completed without any error [true/false]
 %
 % Created    : "2010-06-25 08:37:58 ban"
-% Last Update: "2019-03-01 15:15:19 ban"
+% Last Update: "2021-11-11 20:30:48 ban"
 
 % constants, you can change these for your own purpose.
 stim_fname='nf_stimulus';

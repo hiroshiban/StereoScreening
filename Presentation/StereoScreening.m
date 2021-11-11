@@ -18,7 +18,7 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % 3. Or please copy the psignifit executables to your system path such as C:\Windows\System32.
 %
 % Created    : "Tue Aug 17 12:25:39 2010 ban"
-% Last Update: "2021-06-18 16:14:09 ban"
+% Last Update: "2021-11-11 20:31:24 ban"
 %
 %
 % [acknowledgment]
@@ -236,7 +236,7 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 %
 % stim -- blank -- response -- stim -- blank -- response -- stim -- blank -- reseponse ...
 %
-% The task is to judge whether the targe rectangular plane is near (closer to you compared to the fixational plane) or far.
+% The task is to judge whether the target rectangular plane is near (closer to you compared to the fixational plane) or far.
 % - press key 1 or left-mouse-click when the stimulus is to near (key 1/2 are defined in the display file)
 % - press key 2 or right-mouse-click when the stimulus is to far.
 %
