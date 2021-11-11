@@ -2,7 +2,7 @@
 # **README on StereoScreening**
 
 <div>Created    : "2010-08-17 12:25:39 ban"</div>
-<div>Last Update: "2021-11-11 20:26:20 ban"
+<div>Last Update: "2021-11-11 20:58:51 ban"
 
 ***
 
@@ -33,9 +33,7 @@ StereoScreening is a ***MATLAB***-based software package for testing individual 
 
 The package supports two types of tasks below.  
 
-***
 **1 AFC**  (when sparam.reference_disparity=NaN. For details, please see the description of the stimulusfile below)  
-***
 
 *stim -- blank -- response -- stim -- blank -- response -- stim -- blank -- reseponse ...*  
 
@@ -43,9 +41,7 @@ The task is to judge whether the target rectangular plane is near (closer to you
 - press key 1 or left-mouse-click when the stimulus is to near (key 1/2 are defined in the display file)  
 - press key 2 or right-mouse-click when the stimulus is to far.  
 
-***
 **2 AFC**  (when sparam.reference_disparity is set as to be a real value (reference arcmin))  
-***
 
 *stim(or ref) - blank - stim(or ref) - blank - response - stim(or ref) -blank -- stim(or ref) -- blank -- response ...*  
 
@@ -320,10 +316,10 @@ We would like to express our sincere gratitudes to the authors for sharing these
             (c) 2008-2011  Tobias Wolf  
             [ref] [http://psychtoolbox.org/HomePage](http://psychtoolbox.org/HomePage)
 
-**Psignifit** : a free toolbox for psychometric function estimation.
-           Develped by Dr Ingo Frund, Dr Valentin Hanel and Dr Felix Wichmann.
-           [ref] [https://github.com/wichmann-lab/psignifit/wiki](https://github.com/wichmann-lab/psignifit/wiki)  
-                 [https://github.com/wichmann-lab/psignifit/archive/master.zip](https://github.com/wichmann-lab/psignifit/archive/master.zip)  
+**Psignifit** : A free toolbox for psychometric function estimation.  
+           Develped by Dr Ingo Frund, Dr Valentin Hanel and Dr Felix Wichmann.  
+           [ref 1] [https://github.com/wichmann-lab/psignifit/wiki](https://github.com/wichmann-lab/psignifit/wiki)  
+           [ref 2] [https://github.com/wichmann-lab/psignifit/archive/master.zip](https://github.com/wichmann-lab/psignifit/archive/master.zip)  
 
 [back to the menu](#Menu)
 
