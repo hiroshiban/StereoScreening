@@ -45,7 +45,7 @@ The package supports two types of tasks below.
 
 &nbsp;&nbsp; **Sequence:** *stim(or ref) - blank - stim(or ref) - blank - response - stim(or ref) -blank -- stim(or ref) -- blank -- response ...*  
 
-&nbsp;&nbsp; The task is to judge which (the first or the second) of the rectangular planes is near (closer to you compared to the fixational plane).  
+&nbsp;&nbsp; The task is to judge which (the first or the second) of the two rectangular planes is near.  
 - press key 1 or left-mouse-click when the first stimulus is to near (key 1/2 are defined in the display file)  
 - press key 2 or right-mouse-click when the second stimulus is to near.  
 
