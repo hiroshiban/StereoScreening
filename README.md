@@ -2,7 +2,7 @@
 # **README on StereoScreening**
 
 <div>Created    : "2010-08-17 12:25:39 ban"</div>
-<div>Last Update: "2021-11-30 01:14:20 ban"
+<div>Last Update: "2021-12-02 17:48:42 ban"
 
 ***
 
@@ -33,21 +33,17 @@ StereoScreening is a ***MATLAB***-based software package for testing individual 
 
 The package supports two types of tasks below.  
 
-**A-or-B task**  (when sparam.reference_disparity=NaN. For details, please see the description of the stimulusfile below)  
-
+- **A-or-B task**  (when sparam.reference_disparity=NaN. For details, please see the description of the stimulusfile below)  
 &nbsp;&nbsp; **Sequence:** *stim -- blank -- response -- stim -- blank -- response -- stim -- blank -- response ...*  
-
 &nbsp;&nbsp; The task is to judge whether the target plane is near (closer to you compared to the fixational plane) or far.  
-- press key 1 or left-mouse-click when the stimulus is to near (key 1/2 are defined in the display file)  
-- press key 2 or right-mouse-click when the stimulus is to far.  
+  - press key 1 or left-mouse-click when the stimulus is to near (key 1/2 are defined in the display file)  
+  - press key 2 or right-mouse-click when the stimulus is to far.  
 
-**2 AFC(IFC)**  (when sparam.reference_disparity is set as to be a real value (reference arcmin))  
-
+- **2 AFC(IFC)**  (when sparam.reference_disparity is set as to be a real value (reference arcmin))  
 &nbsp;&nbsp; **Sequence:** *stim(or ref) - blank - stim(or ref) - blank - resp - stim(or ref) -blank -- stim(or ref) -- blank -- resp ...*  
-
 &nbsp;&nbsp; The task is to judge which (the first or the second) of the two planes is near.  
-- press key 1 or left-mouse-click when the first stimulus is to near (key 1/2 are defined in the display file)  
-- press key 2 or right-mouse-click when the second stimulus is to near.  
+  - press key 1 or left-mouse-click when the first stimulus is to near (key 1/2 are defined in the display file)  
+  - press key 2 or right-mouse-click when the second stimulus is to near.  
 
 For more details, please read the descriptions below.  
 Also please check the header comments in ~/StereoScreening/Presentation/StereoScreening.m.  
