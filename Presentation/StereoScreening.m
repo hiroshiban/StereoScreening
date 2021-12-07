@@ -18,7 +18,7 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % 3. Or please copy the psignifit executables to your system path such as C:\Windows\System32.
 %
 % Created    : "Tue Aug 17 12:25:39 2010 ban"
-% Last Update: "2021-11-12 03:26:19 ban"
+% Last Update: "2021-12-08 04:30:58 ban"
 %
 %
 % [acknowledgment]
@@ -43,7 +43,7 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 %                 !!! if 'debug' (case insensitive) is included          !!!
 %                 !!! in subjID string, this program runs as DEBUG mode; !!!
 %                 !!! stimulus images are saved as *.png format at       !!!
-%                 !!! ~/CurvatureShading/Presentation/images             !!!
+%                 !!! ~/StereoScreening/Presentation/images              !!!
 %                 !!!!!!!!!!!!!!!!!! IMPORTANT NOTE !!!!!!!!!!!!!!!!!!!!!!!!
 % acq           : acquisition number (design file number),
 %                 a integer, such as 1, 2, 3, ...

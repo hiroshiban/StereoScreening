@@ -1,8 +1,7 @@
-
 # **README on StereoScreening**
 
 <div>Created    : "2010-08-17 12:25:39 ban"</div>
-<div>Last Update: "2021-12-07 17:47:40 ban"
+<div>Last Update: "2021-12-08 04:57:37 ban"
 
 ***
 
@@ -99,46 +98,46 @@ The StereoScreening package displays rectangular planes with binocular dispariti
 
 [Input variables]  
 <pre>
-ID            : ID of the participant, a string, such as 's01', 'Hiroshi', or 'HB'  
-                the directory named as subj_name (e.g. 'HB') should be located in ~/StereoScreening/Presentation/subjects/  
-                under which configurations files are included. By changing parameters in the configuration files,  
-                stimulus type, size, colors, moving speed, presentation timing etc can be manipulated as you like.  
-                For details, please see the files in ~/StereoScreening/Presentation/subjects/_DEFAULT_.  
-                If subject directory does not exist in the specific directory described above, the parameters in the  
-                _DEFAULT_ directory will be automatically copied as subj_name and the default parameters are used for  
-                stimulus presentation. you can modify the default parameters later once the files are copied and the  
-                script is terminated.  
-                !!!!!!!!!!!!!!!!!! IMPORTANT NOTE !!!!!!!!!!!!!!!!!!!!!!!!  
-                !!! if 'debug' (case insensitive) is included          !!!  
-                !!! in subjID string, this program runs as DEBUG mode; !!!  
-                !!! stimulus images are saved as *.png format at       !!!  
-                !!! ~/CurvatureShading/Presentation/images             !!!  
-                !!!!!!!!!!!!!!!!!! IMPORTANT NOTE !!!!!!!!!!!!!!!!!!!!!!!!  
-acq           : acquisition number (design file number),  
-                a integer, such as 1, 2, 3, ...  
-displayfile   : (optional) display condition file, such as 'shadow_display_fmri.m'  
-                as an example, please see ~/StereoScreening/subjects/_DEFAULT_/nf_display.m  
-stimulusfile  : (optional) stimulus condition file, such as 'shadow_stimulus_exp1.m'  
-                all of the stimuli in this script are generated in real-time based on  
-                the parameters in the stimulus file. For details, please see this  
-                function and the other function in ../Generation and ../Common directries.  
-                as an example, please see ~/StereoScreening/subjects/_DEFAULT_/nf_stimulus.m  
-gamma_table   : (optional) table(s) of gamma-corrected video input values (Color LookupTable).  
-                256(8-bits) x 3(RGB) x 1(or 2,3,... when using multiple displays) matrix  
-                or a *.mat file specified with a relative path format. e.g. '/gamma_table/gamma1.mat'  
-                The *.mat should include a variable named "gamma_table" consists of a 256x3xN matrix.  
-                if you use multiple (more than 1) displays and set a 256x3x1 gamma-table, the same  
-                table will be applied to all displays. if the number of displays and gamma tables  
-                are different (e.g. you have 3 displays and 256x3x!2! gamma-tables), the last  
-                gamma_table will be applied to the second and third displays.  
-                if empty, normalized gamma table (repmat(linspace(0.0,1.0,256),3,1)) will be applied.  
-overwrite_flg : (optional) whether overwriting pre-existing result file. if 1, the previous result  
-                file with the same acquisition number will be overwritten by the previous one.  
-                if 0, the existing file will be backed-up by adding a prefix '_old' at the tail  
-                of the file. 0 by default.  
-force_proceed_flag : (optional) whether proceeding stimulus presentatin without waiting for  
-                the experimenter response (e.g. presesing the ENTER key) or a trigger.  
-                if 1, the stimulus presentation will be automatically carried on.  
+ID            : ID of the participant, a string, such as 's01', 'Hiroshi', or 'HB'
+                the directory named as subj_name (e.g. 'HB') should be located in ~/StereoScreening/Presentation/subjects/
+                under which configurations files are included. By changing parameters in the configuration files,
+                stimulus type, size, colors, moving speed, presentation timing etc can be manipulated as you like.
+                For details, please see the files in ~/StereoScreening/Presentation/subjects/_DEFAULT_.
+                If subject directory does not exist in the specific directory described above, the parameters in the
+                _DEFAULT_ directory will be automatically copied as subj_name and the default parameters are used for
+                stimulus presentation. you can modify the default parameters later once the files are copied and the
+                script is terminated.
+                !!!!!!!!!!!!!!!!!! IMPORTANT NOTE !!!!!!!!!!!!!!!!!!!!!!!!
+                !!! if 'debug' (case insensitive) is included          !!!
+                !!! in subjID string, this program runs as DEBUG mode; !!!
+                !!! stimulus images are saved as *.png format at       !!!
+                !!! ~/StereoScreening/Presentation/images              !!!
+                !!!!!!!!!!!!!!!!!! IMPORTANT NOTE !!!!!!!!!!!!!!!!!!!!!!!!
+acq           : acquisition number (design file number),
+                a integer, such as 1, 2, 3, ...
+displayfile   : (optional) display condition file, such as 'shadow_display_fmri.m'
+                as an example, please see ~/StereoScreening/subjects/_DEFAULT_/nf_display.m
+stimulusfile  : (optional) stimulus condition file, such as 'shadow_stimulus_exp1.m'
+                all of the stimuli in this script are generated in real-time based on
+                the parameters in the stimulus file. For details, please see this
+                function and the other function in ../Generation and ../Common directories.
+                as an example, please see ~/StereoScreening/subjects/_DEFAULT_/nf_stimulus.m
+gamma_table   : (optional) table(s) of gamma-corrected video input values (Color LookupTable).
+                256(8-bits) x 3(RGB) x 1(or 2,3,... when using multiple displays) matrix
+                or a *.mat file specified with a relative path format. e.g. '/gamma_table/gamma1.mat'
+                The *.mat should include a variable named "gamma_table" consists of a 256x3xN matrix.
+                if you use multiple (more than 1) displays and set a 256x3x1 gamma-table, the same
+                table will be applied to all displays. if the number of displays and gamma tables
+                are different (e.g. you have 3 displays and 256x3x!2! gamma-tables), the last
+                gamma_table will be applied to the second and third displays.
+                if empty, normalized gamma table (repmat(linspace(0.0,1.0,256),3,1)) will be applied.
+overwrite_flg : (optional) whether overwriting pre-existing result file. if 1, the previous result
+                file with the same acquisition number will be overwritten by the previous one.
+                if 0, the existing file will be backed-up by adding a prefix '_old' at the tail
+                of the file. 0 by default.
+force_proceed_flag : (optional) whether proceeding stimulus presentation without waiting for
+                the experimenter response (e.g. pressing the ENTER key) or a trigger.
+                if 1, the stimulus presentation will be automatically carried on.
 </pre>
 
 ***IMPORTANT NOTE (Windows only):***  
