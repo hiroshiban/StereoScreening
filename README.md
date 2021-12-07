@@ -2,7 +2,7 @@
 # **README on StereoScreening**
 
 <div>Created    : "2010-08-17 12:25:39 ban"</div>
-<div>Last Update: "2021-12-02 17:48:42 ban"
+<div>Last Update: "2021-12-07 17:47:40 ban"
 
 ***
 
@@ -47,6 +47,8 @@ The package supports two types of tasks below.
 
 For more details, please read the descriptions below.  
 Also please check the header comments in ~/StereoScreening/Presentation/StereoScreening.m.  
+
+***Finally, the package is made publicly available in the hope of keeping our research group being transparent and open. Furthermore, the package is made open also for people who want to know our group's research activities, who want to join our group in the near future, and who want to learn how to create visual stimuli for vision science. Please feel free to contact us if you are interested in our research projects.***  
 
 Thank you for using our software package.  
 We are happy if StereoScreening can help your research projects.
