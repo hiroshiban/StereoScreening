@@ -18,7 +18,7 @@ function StereoScreening(subjID,acq,displayfile,stimulusfile,gamma_table,overwri
 % 3. Or please copy the psignifit executables to your system path such as C:\Windows\System32.
 %
 % Created    : "Tue Aug 17 12:25:39 2010 ban"
-% Last Update: "2021-12-08 04:30:58 ban"
+% Last Update: "2024-10-31 13:53:15 ban"
 %
 %
 % [acknowledgment]
@@ -874,7 +874,7 @@ for nn=1:1:nScr
   end
 end
 Screen('DrawingFinished',winPtr);
-Screen('Flip', winPtr,[],[],[]);
+Screen('Flip', winPtr);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -920,7 +920,7 @@ if sparam.initial_fixation_time~=0
     end
   end
   Screen('DrawingFinished',winPtr);
-  Screen('Flip',winPtr,[],[],[]);
+  Screen('Flip',winPtr);
 
   % wait for the initial fixation
   targetTime=targetTime+sparam.initial_fixation_time;
@@ -1055,7 +1055,7 @@ for currenttrial=1:1:numel(design)
       end
     end
     Screen('DrawingFinished',winPtr);
-    Screen('Flip',winPtr,[],[],[]);
+    Screen('Flip',winPtr);
     event=event.add_event('Stimulus ON',disparity);
 
     % wait for stim_on_duration
@@ -1075,7 +1075,7 @@ for currenttrial=1:1:numel(design)
       end
     end
     Screen('DrawingFinished',winPtr);
-    Screen('Flip',winPtr,[],[],[]);
+    Screen('Flip',winPtr);
     event=event.add_event('Stimulus OFF',disparity);
 
     % wait for stim_off_duration
@@ -1099,7 +1099,7 @@ for currenttrial=1:1:numel(design)
     end
   end
   Screen('DrawingFinished',winPtr);
-  Screen('Flip',winPtr,[],[],[]);
+  Screen('Flip',winPtr);
 
   % get a response
   respFlag=0;
@@ -1174,7 +1174,7 @@ for currenttrial=1:1:numel(design)
       end
     end
     Screen('DrawingFinished',winPtr);
-    Screen('Flip',winPtr,[],[],[]);
+    Screen('Flip',winPtr);
     PlaySound(respFlag>0);
 
     ctime=GetSecs();
@@ -1195,7 +1195,7 @@ for currenttrial=1:1:numel(design)
     end
   end
   Screen('DrawingFinished',winPtr);
-  Screen('Flip',winPtr,[],[],[]);
+  Screen('Flip',winPtr);
 
   % garbage collections, clean up the current texture & release memory
   for ii=1:1:2, Screen('Close',stim{ii}); end

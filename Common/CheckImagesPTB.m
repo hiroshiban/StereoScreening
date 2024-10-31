@@ -37,7 +37,7 @@ function imgfiles=CheckImagesPTB(img_dir,img_ext,auto_msec,img_size)
 %
 %
 % Created    : "2015-07-18 16:14:34 ban"
-% Last Update: "2015-07-29 15:08:37 ban"
+% Last Update: "2024-10-31 13:53:17 ban"
 
 % check the input variables
 if nargin<1 || isempty(img_dir), help(mfilename()); return; end
